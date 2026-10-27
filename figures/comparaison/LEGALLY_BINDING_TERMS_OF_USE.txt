@@ -1,0 +1,12 @@
+Legally Binding Terms of Use
+
+The AlphaFold3 data in this folder (column "af3" of plddt_af2_af3.dat, and
+pae_af3.png) are derived from AlphaFold Server output (results/fold_calmoduline/).
+
+This information is subject to AlphaFold Server Output Terms of Use found at
+alphafoldserver.com/output-terms
+
+Modifications: the per-residue pLDDT values were extracted from the C-alpha
+B-factors of fold_calmoduline_model_0.cif, and pae_af3.png is a rendering of the
+"pae" matrix of fold_calmoduline_full_data_0.json with a green colour scale
+(0-30 A).
