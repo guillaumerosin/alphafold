@@ -12,7 +12,7 @@
   \item \textbf{Pourquoi est-il aujourd'hui dépassé}, et qu'apporte AlphaFold3 ?
   \item \textbf{Comment utiliser AlphaFold3 et interpréter ses résultats} ?
 \end{enumerate}
-Le déploiement d'AlphaFold2 (ColabFold dans Docker) est conservé comme \emph{expérience de référence} : sa prédiction de la calmoduline montre concrètement l'une de ses limites. AlphaFold3 est ensuite utilisé via AlphaFold Server sur une protéine test, l'ubiquitine humaine, et ses nouveaux scores de confiance sont analysés.
+Le déploiement d'AlphaFold2 (ColabFold dans Docker) est conservé comme \emph{expérience de référence} : sa prédiction de la calmoduline montre concrètement l'une de ses limites. La même protéine est ensuite prédite avec AlphaFold3 via AlphaFold Server, ce qui permet de comparer directement les deux modèles. Un premier essai sur l'ubiquitine humaine, qui a servi à valider la manipulation, est présenté en annexe~\ref{sec:ubiquitine}.
 
 %====================================================================
 \section{Ce que faisait AlphaFold2}
@@ -269,36 +269,26 @@ La solution fonctionne dans les conditions du projet, mais plusieurs situations 
 \input{contenu_resultats}
 
 %====================================================================
-\section{Test d'AlphaFold3 : l'ubiquitine humaine}
+\section{AlphaFold3 : la calmoduline, comparée à AlphaFold2}
 \label{sec:af3}
 %====================================================================
 
-\paragraph{Protéine choisie.}
+Pour comparer les deux modèles, il faut leur soumettre \emph{la même protéine}. La calmoduline humaine de la section~\ref{sec:test} a donc été prédite une seconde fois, avec AlphaFold3 via AlphaFold Server. La protéine est décrite à la section~\ref{sec:test} (UniProtKB P0DP23, 149 résidus) et la séquence soumise est exactement la même, sans modification.
+
+\paragraph{Résultats conservés.} Les fichiers sont rangés ainsi :
 \begin{itemize}
-  \item \textbf{Nom} : ubiquitine ;
-  \item \textbf{Organisme} : \emph{Homo sapiens} (humain) ;
-  \item \textbf{Identifiant de la séquence} : entrée PDB \textbf{1UBQ}, chaîne~A, structure obtenue par diffraction des rayons~X à 1,8~Å de résolution~\cite{vijaykumar1987} ;
-  \item \textbf{Base de données} : Protein Data Bank (RCSB PDB)~\cite{berman2000}, page \og Sequence \fg{} de l'entrée 1UBQ. La même séquence correspond aux résidus 1 à 76 de l'entrée UniProtKB \textbf{P0CG47} (polyubiquitine-B, gène \emph{UBB})~\cite{uniprot_P0CG47} ;
-  \item \textbf{Longueur} : \textbf{76 résidus} ;
-  \item \textbf{Séquence utilisée} :
+  \item \texttt{results/fold\_calmoduline/} : l'archive téléchargée depuis AlphaFold Server, décompressée. Elle contient les 5 structures (mmCIF), les fichiers de scores (JSON), la requête soumise, le MSA et les gabarits utilisés ;
+  \item \texttt{figures/af3\_calmoduline.png} : la capture d'écran du résultat.
 \end{itemize}
 
-\begin{center}
-\scriptsize\ttfamily
-MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKES\\
-TLHLVLRLRGG
-\end{center}
-
-\paragraph{Justification du choix.} L'ubiquitine est plus courte que la plage recommandée (100 à 400 résidus). Ce choix est volontaire. Il s'agit d'un premier essai d'AlphaFold3, destiné à valider la manipulation sur AlphaFold Server : une protéine courte donne un résultat en quelques minutes et ne consomme qu'une tâche du quota. Le temps de calcul n'est pas une contrainte ici, puisque le calcul se fait sur les serveurs de Google. L'ubiquitine est aussi l'une des protéines les mieux connues : sa structure expérimentale à haute résolution permet de juger la prédiction à l'œil, et sa queue C-terminale flexible offre un contraste net dans les scores de confiance. L'analyse détaillée, sur une protéine de taille recommandée, est menée avec la calmoduline (149 résidus, section~\ref{sec:test}).
-
-\paragraph{Résultats conservés.} L'archive téléchargée depuis AlphaFold Server est décompressée dans le dossier \texttt{results/fold\_2026\_10\_27\_12\_32/} (le serveur nomme la tâche d'après la date et l'heure de soumission). Elle contient les 5 structures (mmCIF), les fichiers de scores (JSON), la requête soumise, le MSA et les gabarits utilisés. La capture d'écran du résultat est enregistrée dans \texttt{figures/af3\_ubiquitine.png}.
+\subsection{Refaire la manipulation, étape par étape}
 
 % Chaque étape illustrée est placée dans sa figure [H] pour rester sur la même page que sa capture.
-\paragraph{Refaire la manipulation, étape par étape.} Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.
+Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.
 \begin{enumerate}
   \item Ouvrir AlphaFold Server : \url{https://alphafoldserver.com/}.
   \item Se connecter avec un compte Google, puis accepter les conditions d'utilisation lors de la première connexion. La page de soumission (onglet \og Server \fg{}) s'affiche, avec le compteur \og Remaining jobs: 30 \fg{} en haut à droite.
-  \item Récupérer la séquence : ouvrir \url{https://www.rcsb.org/fasta/entry/1UBQ} et copier son contenu, ou copier directement la séquence ci-dessus. Le champ accepte aussi le format FASTA, l'en-tête \texttt{>1UBQ\_1|...} peut donc être collé avec.
+  \item Récupérer la séquence : ouvrir \url{https://rest.uniprot.org/uniprotkb/P0DP23.fasta} et copier son contenu, ou copier la séquence de la section~\ref{sec:test}. Le champ accepte aussi le format FASTA : l'en-tête peut donc être collé avec.
 \end{enumerate}
 
 \begin{figure}[H]
@@ -319,7 +309,7 @@ TLHLVLRLRGG
 \end{enumerate}
   \centering
   \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/2_sequence_collee.png}
-  \caption{Étape 5 : la séquence de l'ubiquitine collée (76 résidus), prête à être soumise.}
+  \caption{Étape 5 : la séquence de la calmoduline collée (149 résidus), prête à être soumise.}
   \label{fig:af3_sequence}
 \end{figure}
 
@@ -328,9 +318,9 @@ TLHLVLRLRGG
   \setcounter{enumi}{5}
   \item Cliquer sur le bouton bleu \og Continue and preview job \fg{}. Une fenêtre récapitulative s'ouvre (figure~\ref{fig:af3_preview}) :
   \begin{itemize}
-    \item \og Job name \fg{} : le serveur propose un nom (date et heure) ; le remplacer par \texttt{ubiquitine} pour retrouver la tâche facilement ;
+    \item \og Job name \fg{} : le serveur propose un nom (date et heure) ; le remplacer par \texttt{calmoduline} pour retrouver la tâche facilement ;
     \item \og Seed \fg{} : laisser l'interrupteur désactivé (\og Seed: Auto \fg{}), le serveur tire alors une graine au hasard ;
-    \item vérifier le tableau : \emph{Protein}, 1 copie, \og (length 76) \fg{}.
+    \item vérifier le tableau : \emph{Protein}, 1 copie, \og (length 149) \fg{}.
   \end{itemize}
   \item Cliquer sur \og Confirm and submit job \fg{}. Le compteur \og Remaining jobs \fg{} diminue de 1.
 \end{enumerate}
@@ -347,40 +337,68 @@ TLHLVLRLRGG
 \end{enumerate}
   \centering
   \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/4_historique.png}
-  \caption{Étape 8 : la tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom).}
+  \caption{Étape 8 : une tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom). La capture montre le premier essai sur l'ubiquitine (annexe~\ref{sec:ubiquitine}), qui avait gardé le nom proposé par défaut.}
   \label{fig:af3_historique}
 \end{figure}
 
-% À AJOUTER : capture d'écran du résultat AlphaFold Server, enregistrée sous figures/af3_ubiquitine.png
 \begin{figure}[H]
 \begin{enumerate}
   \setcounter{enumi}{8}
-  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.86 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite (figure~\ref{fig:af3_ubiquitine}).
+  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.61 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite (figure~\ref{fig:af3_calmoduline}).
+  \item Cliquer sur \og Download \fg{} et décompresser l'archive dans \texttt{results/}.
 \end{enumerate}
   \centering
-  \IfFileExists{../figures/af3_ubiquitine.png}{%
-    \includegraphics[width=0.95\textwidth]{../figures/af3_ubiquitine.png}%
-  }{%
-    \fbox{\parbox[c][4cm][c]{0.9\textwidth}{\centering Capture d'écran AlphaFold Server à ajouter\\(\texttt{figures/af3\_ubiquitine.png})}}%
-  }
-  \caption{Résultat d'AlphaFold3 (AlphaFold Server) pour l'ubiquitine : structure colorée par pLDDT (à gauche), matrice PAE (à droite) ; pTM = 0,86.}
-  \label{fig:af3_ubiquitine}
+  \includegraphics[width=0.95\textwidth]{../figures/af3_calmoduline.png}
+  \caption{Résultat d'AlphaFold3 (AlphaFold Server) pour la calmoduline : structure colorée par pLDDT (à gauche), matrice PAE (à droite) ; pTM = 0,61.}
+  \label{fig:af3_calmoduline}
 \end{figure}
 
-\paragraph{La forme.} La structure (figure~\ref{fig:af3_ubiquitine}) montre un \textbf{feuillet $\beta$} qui s'enroule autour d'une \textbf{hélice $\alpha$}. C'est le repliement \og $\beta$-grasp \fg{}, caractéristique de l'ubiquitine : compact et très stable.
+\subsection{Résultats et comparaison avec AlphaFold2}
 
-\paragraph{Le pLDDT.} La légende d'AlphaFold Server reprend les classes de confiance d'AlphaFold2 : bleu foncé ($>$ 90), bleu clair (70--90), jaune (50--70) et orange ($<$ 50). L'ubiquitine est presque entièrement bleu foncé ; seule la queue C-terminale passe au bleu clair puis au jaune. Les fichiers téléchargés le confirment : le pLDDT moyen vaut \textbf{91,9} (moyenne sur tous les atomes du modèle~0), et 70 des 76 résidus dépassent 90 (pLDDT de leur C$\alpha$). Le pLDDT décroît régulièrement à partir du résidu~71 : 93 pour Leu71, 78 pour Leu73, 70 pour Arg74, 61 pour Gly75 et 53 pour Gly76. Ce résultat est cohérent avec la biologie : cette queue flexible se termine par la glycine~76, qui se lie de façon covalente aux protéines cibles lors de l'ubiquitination.
+Les scores d'AlphaFold3 ont été extraits des fichiers téléchargés avec les mêmes définitions que pour AlphaFold2 : pLDDT des atomes C$\alpha$, mêmes classes de confiance, mêmes domaines pour la PAE (lobe~N = résidus 1--78, lobe~C = résidus 82--149). Le tableau~\ref{tab:af2_af3_calm} compare les deux meilleurs modèles.
 
-\paragraph{La PAE.} La matrice est vert foncé presque partout : la protéine forme un seul bloc rigide, dont les positions relatives sont fiables. Seule une bande plus claire apparaît pour les résidus 72 à 76 : la position de la queue par rapport au reste de la protéine est incertaine. En chiffres, la PAE moyenne vaut \textbf{1,7~Å} entre les résidus 1 à 71, mais atteint \textbf{13,5~Å} en moyenne dans les cases qui associent la queue (72--76) au reste de la protéine, avec un maximum de 26~Å. Sur une protéine à plusieurs domaines, on verrait au contraire plusieurs carrés foncés séparés par des zones claires, comme pour la calmoduline (figure~\ref{fig:pae}).
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}}
+\toprule
+ & \textbf{AlphaFold2 (ColabFold)} & \textbf{AlphaFold3 (Server)} \\
+\midrule
+pLDDT moyen & 82,8 & \textbf{89,7} \\
+Résidus à pLDDT $\geq$ 90 & 32 (21,5~\%) & \textbf{90 (60,4~\%)} \\
+Résidus à pLDDT $<$ 70 & 17 (11,4~\%) & \textbf{3 (2,0~\%)}, résidus 1--3 \\
+pLDDT minimal du linker (75--83) & 53 (résidu 80) & \textbf{72} (résidu 76) \\
+pLDDT du résidu C-terminal (149) & 43 & \textbf{73} \\
+PAE moyenne dans le lobe N / C & 5,1 / 3,8~Å & \textbf{3,4 / 2,1~Å} \\
+PAE moyenne entre les lobes & 20,6 et 19,7~Å & \textbf{14,7 et 13,0~Å} \\
+PAE moyenne (toute la matrice) & 12,3~Å & \textbf{8,2~Å} \\
+pTM & 0,49 & \textbf{0,61} \\
+Distance entre les centres des lobes & 32,6~Å & 37,5~Å \\
+MSA & 21\,884 séquences (MMseqs2) & \textasciitilde 17\,900 séquences \\
+Gabarits & aucun & 4 structures de calmoduline \\
+Temps de calcul & 1~h~57 (CPU, 5 modèles) & quelques minutes (serveur) \\
+\bottomrule
+\end{tabularx}
+\caption{Calmoduline humaine : comparaison des meilleurs modèles d'AlphaFold2 et d'AlphaFold3.}
+\label{tab:af2_af3_calm}
+\end{table}
 
-\paragraph{pTM et ipTM.} Le pTM vaut \textbf{0,86}, bien au-dessus du seuil de 0,5 au-delà duquel le repliement global est considéré comme correct. L'ipTM n'est pas défini ici (le serveur affiche \og ipTM = - \fg{}), puisqu'il n'y a qu'une seule chaîne. Il devient le score central dès que l'on ajoute une entité (seconde protéine, ADN, ligand). Il faut aussi savoir que le score TM est très sévère pour les petites structures : sous une vingtaine de jetons, le pTM est presque nul, et il vaut mieux se fier au pLDDT et à la PAE.
+Les figures~\ref{fig:plddt_af2_af3} et~\ref{fig:pae_af2_af3} superposent les deux prédictions, tracées à partir des fichiers de résultats avec les mêmes axes et la même échelle de couleurs.
 
-\paragraph{Les 5 modèles.} Le serveur renvoie 5 structures, issues de 5 échantillons du module de diffusion. Elles sont pratiquement identiques : pTM de 0,85 ou 0,86, pLDDT moyen entre 91,7 et 92,0, aucune collision entre atomes (\texttt{has\_clash} = 0) et aucune région jugée désordonnée (\texttt{fraction\_disordered} = 0).
+\input{figures_comparaison}
 
-\paragraph{Une prédiction facilitée par les gabarits.} D'après le fichier \texttt{job\_request.json}, l'option d'utilisation des gabarits (\texttt{useStructureTemplate}) était activée (valeur par défaut du serveur). Le dossier \texttt{templates/} contient les 4 gabarits utilisés, des structures expérimentales de la PDB qui contiennent l'ubiquitine (6NJD, 3WXE, 5VIX et 5OE7). Le MSA non apparié compte environ 7\,200 séquences. Avec autant d'information, il n'est pas étonnant que la prédiction soit excellente : ce test montre que la chaîne de travail fonctionne, mais il ne mesure pas la capacité d'AlphaFold3 à prédire une structure inconnue.
+\paragraph{Le pLDDT : une confiance nettement plus élevée.} AlphaFold3 est plus confiant presque partout. La part des résidus très fiables ($\geq$ 90) triple, de 21,5 à 60,4~\%. Les zones faibles d'AlphaFold2 disparaissent presque : le linker central ne descend plus qu'à 72 (contre 53), l'extrémité C-terminale passe de 43 à 73, et seuls les trois premiers résidus restent sous 70 (segment jaune sur la figure~\ref{fig:af3_calmoduline}). Les cinq modèles d'AlphaFold3 sont très proches : pLDDT moyen entre 88,9 et 89,7, pTM entre 0,57 et 0,61, aucune collision entre atomes.
 
-% PROLONGEMENT À FAIRE : soumettre la calmoduline (P0DP23) avec 4 ions Ca2+ sur AlphaFold Server
-% et comparer le pLDDT, la PAE et l'orientation des lobes à la prédiction AlphaFold2 de la section sec:test.
+\paragraph{La PAE : les lobes mieux définis, leur orientation toujours incertaine.} La matrice d'AlphaFold3 (figure~\ref{fig:af3_calmoduline}) présente la même structure que celle d'AlphaFold2 (figure~\ref{fig:pae}) : deux carrés foncés, un par lobe, séparés par des zones plus claires. L'erreur diminue partout : de 5,1 à 3,4~Å dans le lobe~N, de 3,8 à 2,1~Å dans le lobe~C, et d'environ 20 à 14~Å entre les lobes. Mais une PAE de 13 à 15~Å entre les lobes reste élevée. AlphaFold3 n'est donc pas sûr, lui non plus, de l'orientation d'un lobe par rapport à l'autre. Ce résultat est cohérent avec la biologie : la région centrale de la calmoduline est réellement flexible en solution~\cite{barbato1992}, et aucune structure unique ne la décrit entièrement. Les deux modèles placent d'ailleurs les lobes différemment (centres distants de 32,6~Å contre 37,5~Å).
+
+\paragraph{Le pTM.} Il passe de 0,49 à 0,61, c'est-à-dire au-dessus du seuil de 0,5 au-delà duquel la forme d'ensemble est probablement correcte~\cite{zhang2004}. Ce gain reste modeste : comme le pTM est calculé sur toute la chaîne, l'incertitude sur la position relative des lobes le pénalise.
+
+\paragraph{Une comparaison à nuancer : les gabarits.} Les deux prédictions n'ont pas reçu exactement les mêmes informations. La prédiction AlphaFold2 a été faite sans gabarits (réglage par défaut de ColabFold). AlphaFold Server, lui, utilise les gabarits par défaut (\texttt{useStructureTemplate} activé dans \texttt{job\_request.json}), et ce réglage n'a pas été modifié. Il a utilisé 4 structures expérimentales de calmoduline de la PDB (4IL1, 1XFU, 6XXX et 6DAH), visibles dans le dossier \texttt{templates/}. Une partie du gain de confiance vient donc probablement de ces gabarits, et pas seulement de la nouvelle architecture. Pour isoler l'effet du modèle, il faudrait relancer ColabFold avec l'option \texttt{--templates}.
+
+\paragraph{Bilan.} Sur la même protéine, AlphaFold3 donne une structure plus confiante, surtout dans les régions qui posaient problème à AlphaFold2 (linker, extrémités), en quelques minutes au lieu de deux heures. En revanche, il ne lève pas l'incertitude sur l'orientation des deux lobes, qui reflète une flexibilité réelle de la protéine. Enfin, les deux prédictions ont été faites \emph{sans} les ions Ca$^{2+}$ : la différence décisive d'AlphaFold3, sa capacité à les inclure, reste à exploiter.
+
+% PROLONGEMENT À FAIRE : soumettre la calmoduline avec 4 ions Ca2+ (tâche calmoduline_ca)
+% et comparer pLDDT, PAE entre les lobes et position des ions dans les boucles EF-hand.
 
 %====================================================================
 \section{Limites d'AlphaFold3}
@@ -427,7 +445,7 @@ On retrouve ainsi, en plus marqué, la tendance déjà visible avec AlphaFold3 :
 \section{Retour d'expérience}
 %====================================================================
 
-\paragraph{Ce qui a fonctionné.} AlphaFold Server a rendu AlphaFold3 utilisable sans aucune installation ni GPU : une prédiction de l'ubiquitine se lance en quelques clics. Côté AlphaFold2, l'image Docker de ColabFold a fonctionné du premier coup sur une machine sans GPU, et toute la chaîne tient en deux commandes (\texttt{predict.sh} puis \texttt{analyse.py}).
+\paragraph{Ce qui a fonctionné.} AlphaFold Server a rendu AlphaFold3 utilisable sans aucune installation ni GPU : une prédiction se lance en quelques clics, et la calmoduline a été prédite en quelques minutes, contre près de deux heures pour AlphaFold2 sur CPU. Côté AlphaFold2, l'image Docker de ColabFold a fonctionné du premier coup sur une machine sans GPU, et toute la chaîne tient en deux commandes (\texttt{predict.sh} puis \texttt{analyse.py}).
 
 \paragraph{Ce qui a posé problème.} Le temps de calcul d'AlphaFold2 sur CPU (1~h~57 pour 149 résidus) est prohibitif au-delà de quelques centaines de résidus. Pour AlphaFold3, l'obstacle n'est plus technique mais d'accès : sans GPU de 40 à 80~Go, seul le serveur est utilisable, avec son quota, sans API et avec une liste de ligands limitée.
 

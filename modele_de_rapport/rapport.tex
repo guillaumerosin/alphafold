@@ -35,6 +35,9 @@
 \usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{positioning,shapes.geometric,arrows.meta,calc}
+%graphiques de comparaison AlphaFold2 / AlphaFold3 (pLDDT, PAE)
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
 
 %====================== AFFICHAGE DE LISTINGS ======================
 
@@ -120,5 +123,7 @@ pdfstartview={FitH}}					% ajuste la page à la largueur de l'écran
 \newpage
 \appendix
 \input{annexe_pairformer}
+\newpage
+\input{annexe_ubiquitine}
 
 \end{document}

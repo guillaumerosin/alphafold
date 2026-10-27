@@ -1,0 +1,72 @@
+% Figures de comparaison AlphaFold2 / AlphaFold3 sur la calmoduline.
+% Données extraites des fichiers de résultats dans ../figures/comparaison/ :
+%   plddt_af2_af3.dat : pLDDT par résidu (AF2 : scores_rank_001 ; AF3 : C-alpha du modèle 0)
+%   pae_af2.png, pae_af3.png : matrices PAE en image (1 ligne de la matrice = 1 ligne de pixels,
+%   résidu 1 en haut), générées depuis les JSON avec l'échelle de couleurs « paevert » ci-dessous
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=\textwidth, height=6.5cm,
+      xmin=1, xmax=149, ymin=30, ymax=100,
+      xlabel={Résidu}, ylabel={pLDDT},
+      xtick={1,20,40,60,80,100,120,149},
+      legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, font=\footnotesize, draw=none},
+      tick label style={font=\footnotesize},
+      label style={font=\small},
+    ]
+      % classes de confiance (couleurs d'AlphaFold Server)
+      \fill[blue!12]   (axis cs:1,90) rectangle (axis cs:149,100);
+      \fill[cyan!10]   (axis cs:1,70) rectangle (axis cs:149,90);
+      \fill[yellow!15] (axis cs:1,50) rectangle (axis cs:149,70);
+      \fill[orange!15] (axis cs:1,30) rectangle (axis cs:149,50);
+      % linker central entre les deux lobes
+      \draw[dashed, gray] (axis cs:75,30) -- (axis cs:75,100);
+      \draw[dashed, gray] (axis cs:83,30) -- (axis cs:83,100);
+      \node[font=\scriptsize, gray!50!black, fill=white, inner sep=1pt] at (axis cs:79,35) {linker};
+      \node[font=\scriptsize] at (axis cs:39,35) {lobe N};
+      \node[font=\scriptsize] at (axis cs:115,35) {lobe C};
+
+      \addplot[thick, black!70, densely dashed] table[x=residu, y=af2] {../figures/comparaison/plddt_af2_af3.dat};
+      \addlegendentry{AlphaFold2 (moyenne 82,8)}
+      \addplot[thick, blue!80!black] table[x=residu, y=af3] {../figures/comparaison/plddt_af2_af3.dat};
+      \addlegendentry{AlphaFold3 (moyenne 89,7)}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{pLDDT par résidu de la calmoduline : meilleur modèle d'AlphaFold2 (tirets) et d'AlphaFold3 (trait plein). Fonds colorés : classes de confiance d'AlphaFold Server ; tirets verticaux : linker central (75--83).}
+  \label{fig:plddt_af2_af3}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \pgfplotsset{
+    paestyle/.style={
+      width=7.4cm, height=7.4cm, scale only axis=false,
+      enlargelimits=false, axis on top,
+      xmin=0.5, xmax=149.5, ymin=0.5, ymax=149.5, y dir=reverse,
+      xtick={1,40,78,110,149}, ytick={1,40,78,110,149},
+      tick label style={font=\footnotesize}, label style={font=\small},
+      xlabel={Résidu évalué}, title style={font=\small},
+      colormap={paevert}{rgb255=(0,90,30) rgb255=(60,150,70) rgb255=(170,215,160) rgb255=(245,250,240)},
+      point meta min=0, point meta max=30,
+    }
+  }
+  \begin{tikzpicture}
+    \begin{axis}[paestyle, title={AlphaFold2}, ylabel={Résidu aligné}]
+      \addplot graphics[xmin=0.5, xmax=149.5, ymin=0.5, ymax=149.5] {../figures/comparaison/pae_af2.png};
+      \draw[white, thin] (axis cs:80,0.5) -- (axis cs:80,149.5);
+      \draw[white, thin] (axis cs:0.5,80) -- (axis cs:149.5,80);
+    \end{axis}
+  \end{tikzpicture}\hfill
+  \begin{tikzpicture}
+    \begin{axis}[paestyle, title={AlphaFold3}, yticklabels={},
+      colorbar, colorbar style={width=3mm, ylabel={PAE (Å)}, ytick={0,5,10,15,20,25,30}, tick label style={font=\footnotesize}}]
+      \addplot graphics[xmin=0.5, xmax=149.5, ymin=0.5, ymax=149.5] {../figures/comparaison/pae_af3.png};
+      \draw[white, thin] (axis cs:80,0.5) -- (axis cs:80,149.5);
+      \draw[white, thin] (axis cs:0.5,80) -- (axis cs:149.5,80);
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Matrices PAE de la calmoduline, avec la même échelle de couleurs (0 à 30~Å). Les lignes blanches séparent les deux lobes (au résidu 80). Les blocs hors diagonale, qui mesurent l'incertitude sur l'orientation d'un lobe par rapport à l'autre, sont plus foncés avec AlphaFold3 (environ 14~Å) qu'avec AlphaFold2 (environ 20~Å), mais restent nettement plus clairs que les lobes eux-mêmes.}
+  \label{fig:pae_af2_af3}
+\end{figure}
