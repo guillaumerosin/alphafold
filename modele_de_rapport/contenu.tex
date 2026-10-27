@@ -191,7 +191,8 @@ Réseau & Connexion Internet & Connexion Internet : téléchargements initiaux, 
   \item \texttt{fold\_<nom>\_model\_0.cif} à \texttt{model\_4.cif} : les 5 structures prédites (format mmCIF), le modèle~0 étant le mieux classé ;
   \item \texttt{fold\_<nom>\_summary\_confidences\_*.json} : les scores globaux de chaque modèle (pTM, ipTM, score de classement, fraction désordonnée, présence de collisions) ;
   \item \texttt{fold\_<nom>\_full\_data\_*.json} : les scores détaillés (pLDDT par atome, matrice PAE, probabilités de contact) ;
-  \item \texttt{fold\_<nom>\_job\_request.json} : la requête soumise, utile pour la traçabilité et pour relancer la même tâche.
+  \item \texttt{fold\_<nom>\_job\_request.json} : la requête soumise, utile pour la traçabilité et pour relancer la même tâche ;
+  \item \texttt{msas/} et \texttt{templates/} : les alignements et les gabarits de la PDB utilisés par le modèle.
 \end{itemize}
 
 \paragraph{Difficultés et points d'attention.}
@@ -290,7 +291,7 @@ TLHLVLRLRGG
 
 \paragraph{Justification du choix.} L'ubiquitine est plus courte que la plage recommandée (100 à 400 résidus). Ce choix est volontaire. Il s'agit d'un premier essai d'AlphaFold3, destiné à valider la manipulation sur AlphaFold Server : une protéine courte donne un résultat en quelques minutes et ne consomme qu'une tâche du quota. Le temps de calcul n'est pas une contrainte ici, puisque le calcul se fait sur les serveurs de Google. L'ubiquitine est aussi l'une des protéines les mieux connues : sa structure expérimentale à haute résolution permet de juger la prédiction à l'œil, et sa queue C-terminale flexible offre un contraste net dans les scores de confiance. L'analyse détaillée, sur une protéine de taille recommandée, est menée avec la calmoduline (149 résidus, section~\ref{sec:test}).
 
-\paragraph{Résultats conservés.} L'archive téléchargée depuis AlphaFold Server (structures mmCIF et fichiers de scores JSON) est à conserver dans le dossier \texttt{results/ubiquitine\_af3/}. La capture d'écran du résultat est enregistrée dans \texttt{figures/af3\_ubiquitine.png}.
+\paragraph{Résultats conservés.} L'archive téléchargée depuis AlphaFold Server est décompressée dans le dossier \texttt{results/fold\_2026\_10\_27\_12\_32/} (le serveur nomme la tâche d'après la date et l'heure de soumission). Elle contient les 5 structures (mmCIF), les fichiers de scores (JSON), la requête soumise, le MSA et les gabarits utilisés. La capture d'écran du résultat est enregistrée dans \texttt{figures/af3\_ubiquitine.png}.
 
 % Chaque étape illustrée est placée dans sa figure [H] pour rester sur la même page que sa capture.
 \paragraph{Refaire la manipulation, étape par étape.} Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.
@@ -368,11 +369,15 @@ TLHLVLRLRGG
 
 \paragraph{La forme.} La structure (figure~\ref{fig:af3_ubiquitine}) montre un \textbf{feuillet $\beta$} qui s'enroule autour d'une \textbf{hélice $\alpha$}. C'est le repliement \og $\beta$-grasp \fg{}, caractéristique de l'ubiquitine : compact et très stable.
 
-\paragraph{Le pLDDT.} La légende d'AlphaFold Server reprend les classes de confiance d'AlphaFold2 : bleu foncé ($>$ 90), bleu clair (70--90), jaune (50--70) et orange ($<$ 50). L'ubiquitine est presque entièrement bleu foncé ; seule la queue C-terminale passe au bleu clair puis au jaune. Ce résultat est cohérent avec la biologie : cette queue flexible se termine par la glycine~76, qui se lie de façon covalente aux protéines cibles lors de l'ubiquitination.
+\paragraph{Le pLDDT.} La légende d'AlphaFold Server reprend les classes de confiance d'AlphaFold2 : bleu foncé ($>$ 90), bleu clair (70--90), jaune (50--70) et orange ($<$ 50). L'ubiquitine est presque entièrement bleu foncé ; seule la queue C-terminale passe au bleu clair puis au jaune. Les fichiers téléchargés le confirment : le pLDDT moyen vaut \textbf{91,9} (moyenne sur tous les atomes du modèle~0), et 70 des 76 résidus dépassent 90 (pLDDT de leur C$\alpha$). Le pLDDT décroît régulièrement à partir du résidu~71 : 93 pour Leu71, 78 pour Leu73, 70 pour Arg74, 61 pour Gly75 et 53 pour Gly76. Ce résultat est cohérent avec la biologie : cette queue flexible se termine par la glycine~76, qui se lie de façon covalente aux protéines cibles lors de l'ubiquitination.
 
-\paragraph{La PAE.} La matrice est vert foncé presque partout : la protéine forme un seul bloc rigide, dont les positions relatives sont fiables. Seule une bande plus claire apparaît pour les résidus 72 à 76 : la position de la queue par rapport au reste de la protéine est incertaine. Sur une protéine à plusieurs domaines, on verrait au contraire plusieurs carrés foncés séparés par des zones claires, comme pour la calmoduline (figure~\ref{fig:pae}).
+\paragraph{La PAE.} La matrice est vert foncé presque partout : la protéine forme un seul bloc rigide, dont les positions relatives sont fiables. Seule une bande plus claire apparaît pour les résidus 72 à 76 : la position de la queue par rapport au reste de la protéine est incertaine. En chiffres, la PAE moyenne vaut \textbf{1,7~Å} entre les résidus 1 à 71, mais atteint \textbf{13,5~Å} en moyenne dans les cases qui associent la queue (72--76) au reste de la protéine, avec un maximum de 26~Å. Sur une protéine à plusieurs domaines, on verrait au contraire plusieurs carrés foncés séparés par des zones claires, comme pour la calmoduline (figure~\ref{fig:pae}).
 
 \paragraph{pTM et ipTM.} Le pTM vaut \textbf{0,86}, bien au-dessus du seuil de 0,5 au-delà duquel le repliement global est considéré comme correct. L'ipTM n'est pas défini ici (le serveur affiche \og ipTM = - \fg{}), puisqu'il n'y a qu'une seule chaîne. Il devient le score central dès que l'on ajoute une entité (seconde protéine, ADN, ligand). Il faut aussi savoir que le score TM est très sévère pour les petites structures : sous une vingtaine de jetons, le pTM est presque nul, et il vaut mieux se fier au pLDDT et à la PAE.
+
+\paragraph{Les 5 modèles.} Le serveur renvoie 5 structures, issues de 5 échantillons du module de diffusion. Elles sont pratiquement identiques : pTM de 0,85 ou 0,86, pLDDT moyen entre 91,7 et 92,0, aucune collision entre atomes (\texttt{has\_clash} = 0) et aucune région jugée désordonnée (\texttt{fraction\_disordered} = 0).
+
+\paragraph{Une prédiction facilitée par les gabarits.} D'après le fichier \texttt{job\_request.json}, l'option d'utilisation des gabarits (\texttt{useStructureTemplate}) était activée (valeur par défaut du serveur). Le dossier \texttt{templates/} contient les 4 gabarits utilisés, des structures expérimentales de la PDB qui contiennent l'ubiquitine (6NJD, 3WXE, 5VIX et 5OE7). Le MSA non apparié compte environ 7\,200 séquences. Avec autant d'information, il n'est pas étonnant que la prédiction soit excellente : ce test montre que la chaîne de travail fonctionne, mais il ne mesure pas la capacité d'AlphaFold3 à prédire une structure inconnue.
 
 % PROLONGEMENT À FAIRE : soumettre la calmoduline (P0DP23) avec 4 ions Ca2+ sur AlphaFold Server
 % et comparer le pLDDT, la PAE et l'orientation des lobes à la prédiction AlphaFold2 de la section sec:test.
