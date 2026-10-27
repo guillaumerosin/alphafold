@@ -285,7 +285,7 @@ TLHLVLRLRGG
   \item Ouvrir AlphaFold Server : \url{https://alphafoldserver.com/}.
   \item Se connecter avec un compte Google, puis accepter les conditions d'utilisation lors de la première connexion. La page de soumission (onglet \og Server \fg{}) s'affiche, avec le compteur \og Remaining jobs: 30 \fg{} en haut à droite.
   \item Récupérer la séquence : ouvrir \url{https://www.rcsb.org/fasta/entry/1UBQ} et copier son contenu, ou copier directement la séquence ci-dessus. Le champ accepte aussi le format FASTA, l'en-tête \texttt{>1UBQ\_1|...} peut donc être collé avec.
-  \item Sur AlphaFold Server, vérifier que \og Entity type \fg{} vaut \emph{Protein} et \og Copies \fg{} vaut 1, puis cliquer dans le champ \og Paste sequence or fasta \fg{} (figure~\ref{fig:af3_champ_vide}). Le message rouge \og This field is required \fg{} disparaît dès que la séquence est collée.
+  \item Sur AlphaFold Server, vérifier que \og Entity type \fg{} vaut \emph{Protein} et \og Copies \fg{} vaut 1, puis cliquer dans le champ \og Paste sequence or fasta \fg{} (figure~\ref{fig:af3_champ_vide}).
 \end{enumerate}
 
 \begin{figure}[H]
@@ -297,19 +297,18 @@ TLHLVLRLRGG
 
 \begin{enumerate}
   \setcounter{enumi}{4}
-  \item Coller la séquence. Le serveur l'affiche découpée par blocs de 10, avec la numérotation au-dessus ; le dernier numéro doit être \textbf{76} (figure~\ref{fig:af3_sequence}).
-  \item Ne pas cliquer sur \og Add entity \fg{} : pour ce premier test, l'ubiquitine est prédite seule.
+  \item Coller la séquence. Le serveur l'affiche découpée par blocs de 10, avec la numérotation au-dessus.
 \end{enumerate}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/2_sequence_collee.png}
-  \caption{Étapes 5 et 6 : la séquence de l'ubiquitine collée (76 résidus), prête à être soumise.}
+  \caption{Étape 5 : la séquence de l'ubiquitine collée (76 résidus), prête à être soumise.}
   \label{fig:af3_sequence}
 \end{figure}
 
 \begin{enumerate}
-  \setcounter{enumi}{6}
+  \setcounter{enumi}{5}
   \item Cliquer sur le bouton bleu \og Continue and preview job \fg{}. Une fenêtre récapitulative s'ouvre (figure~\ref{fig:af3_preview}) :
   \begin{itemize}
     \item \og Job name \fg{} : le serveur propose un nom (date et heure) ; le remplacer par \texttt{ubiquitine} pour retrouver la tâche facilement ;
@@ -322,24 +321,26 @@ TLHLVLRLRGG
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.55\textwidth]{../figures/af3_etapes/3_previsualisation.png}
-  \caption{Étapes 7 et 8 : la fenêtre de prévisualisation avant l'envoi.}
+  \caption{Étapes 6 et 7 : la fenêtre de prévisualisation avant l'envoi.}
   \label{fig:af3_preview}
 \end{figure}
 
 \begin{enumerate}
-  \setcounter{enumi}{8}
-  \item Descendre jusqu'à l'historique, sous le formulaire. La tâche y apparaît avec une icône de chargement tant qu'elle est en cours (figure~\ref{fig:af3_historique}). Attendre quelques minutes qu'elle soit terminée, puis cliquer sur son nom pour ouvrir le résultat.
-  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.86 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite.
-  \item Faire une capture d'écran de cette page : c'est la figure~\ref{fig:af3_ubiquitine}.
-  \item Facultatif : cliquer sur \og Download \fg{} pour récupérer l'archive ZIP (structures \texttt{.cif} et scores \texttt{.json}, voir la section~\ref{sec:af3_server}).
+  \setcounter{enumi}{7}
+  \item Dans l'historique, sous le formulaire, attendre la fin du calcul (figure~\ref{fig:af3_historique}), puis cliquer sur le nom de la tâche.
 \end{enumerate}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/4_historique.png}
-  \caption{Étape 9 : la tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom).}
+  \caption{Étape 8 : la tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom).}
   \label{fig:af3_historique}
 \end{figure}
+
+\begin{enumerate}
+  \setcounter{enumi}{8}
+  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.86 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite (figure~\ref{fig:af3_ubiquitine}).
+\end{enumerate}
 
 % À AJOUTER : capture d'écran du résultat AlphaFold Server, enregistrée sous figures/af3_ubiquitine.png
 \begin{figure}[H]
