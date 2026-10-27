@@ -7,3 +7,9 @@ modele_de_rapport/*.out
 modele_de_rapport/*.blg
 modele_de_rapport/*.bbl
 modele_de_rapport/*.synctex.gz
+
+# fichiers personnels et doublons, à ne pas publier
+push
+results/rosinguillaume/
+logs/rosinguillaume.log
+results/*.zip
