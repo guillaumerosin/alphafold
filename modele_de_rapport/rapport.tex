@@ -25,6 +25,9 @@
 %police et mise en page (marges) du document
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
+%garder "--" tel quel dans les commandes en \texttt
+\usepackage{microtype}
+\DisableLigatures[-]{encoding=T1,family=tt*}
 \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
 %Pour les galerie d'images
 \usepackage{subfig}
@@ -112,5 +115,10 @@ pdfstartview={FitH}}					% ajuste la page à la largueur de l'écran
 %inclusion de la biblio
 \bibliography{bibliographie.bib}
 %voir wiki pour plus d'information sur la syntaxe des entrées d'une bibliographie
+
+%annexes
+\newpage
+\appendix
+\input{annexe_pairformer}
 
 \end{document}

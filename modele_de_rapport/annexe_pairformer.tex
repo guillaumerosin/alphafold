@@ -1,0 +1,96 @@
+%====================================================================
+\section{Annexe : le Pairformer d'AlphaFold3}
+\label{annexe:pairformer}
+%====================================================================
+
+\paragraph{Rôle.} Le Pairformer est le \og tronc \fg{} d'AlphaFold3~\cite{abramson2024}. Il se place entre le module MSA et le module de diffusion (figure~\ref{fig:schema_af3}). Il ne calcule aucune coordonnée : il construit une \emph{description} du complexe, que le module de diffusion utilise ensuite pour placer les atomes. C'est là que se fait l'essentiel du \og raisonnement \fg{} sur la géométrie.
+
+\paragraph{Deux représentations.} Pour un complexe de $N$ jetons, le Pairformer manipule deux tableaux de nombres :
+\begin{itemize}
+  \item la \textbf{représentation par jeton} $s_i$ : un vecteur de 384 nombres par jeton, qui résume \og ce qu'est \fg{} le jeton~$i$ et son environnement ;
+  \item la \textbf{représentation de paires} $z_{ij}$ : un vecteur de 128 nombres pour \emph{chaque couple} de jetons $(i,j)$, soit une matrice $N \times N$. Elle code la relation entre les deux jetons : sont-ils proches ? à quelle distance ? dans quelle orientation ?
+\end{itemize}
+Au départ, $z_{ij}$ contient ce que le réseau sait déjà : la position dans la séquence, les liaisons covalentes, les gabarits éventuels et les signaux de coévolution extraits par le module MSA. Les 48 blocs du Pairformer affinent ensuite ces deux représentations. Le tout est répété plusieurs fois par recyclage.
+
+\paragraph{Contenu d'un bloc.} Chaque bloc enchaîne six opérations (figure~\ref{fig:pairformer_bloc}). Chacune ajoute une petite correction à la représentation, sans la remplacer (connexion résiduelle) :
+\begin{enumerate}
+  \item \textbf{Mise à jour triangulaire multiplicative \og sortante \fg{}} : $z_{ij}$ est corrigé à partir des arêtes $z_{ik}$ et $z_{jk}$, pour tous les jetons $k$ ;
+  \item \textbf{Mise à jour triangulaire multiplicative \og entrante \fg{}} : idem avec $z_{ki}$ et $z_{kj}$ ;
+  \item \textbf{Attention triangulaire (nœud de départ)} : la paire $(i,j)$ choisit les paires $(i,k)$ les plus utiles, avec un poids qui dépend de la troisième arête $(j,k)$ ;
+  \item \textbf{Attention triangulaire (nœud d'arrivée)} : idem autour de $j$ ;
+  \item \textbf{Transition} : un petit réseau appliqué à chaque paire séparément ;
+  \item \textbf{Attention sur les jetons, biaisée par les paires}, suivie d'une transition : chaque jeton $i$ regarde les autres jetons, et l'importance qu'il accorde au jeton $j$ dépend de $z_{ij}$.
+\end{enumerate}
+Les cinq premières opérations ne travaillent que sur les paires. L'information circule ensuite des paires vers les jetons, et pas dans l'autre sens.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    font=\small,
+    node distance=3mm,
+    op/.style={draw, rounded corners=2pt, fill=orange!15, align=center, text width=52mm, minimum height=7mm},
+    sop/.style={draw, rounded corners=2pt, fill=blue!8, align=center, text width=52mm, minimum height=7mm},
+    arr/.style={-{Stealth[length=2mm]}, thick}
+  ]
+    \node[font=\bfseries] (tz) {Paires $z_{ij}$ ($N \times N \times 128$)};
+    \node[op, below=of tz] (o1) {Triangle multiplicatif sortant};
+    \node[op, below=of o1] (o2) {Triangle multiplicatif entrant};
+    \node[op, below=of o2] (o3) {Attention triangulaire (départ)};
+    \node[op, below=of o3] (o4) {Attention triangulaire (arrivée)};
+    \node[op, below=of o4] (o5) {Transition};
+
+    \node[font=\bfseries, right=22mm of tz] (ts) {Jetons $s_i$ ($N \times 384$)};
+    \node[sop, below=17mm of ts] (s1) {Attention avec biais de paires};
+    \node[sop, below=of s1] (s2) {Transition};
+
+    \draw[arr] (tz) -- (o1);
+    \draw[arr] (o1) -- (o2);
+    \draw[arr] (o2) -- (o3);
+    \draw[arr] (o3) -- (o4);
+    \draw[arr] (o4) -- (o5);
+    \draw[arr] (ts) -- (s1);
+    \draw[arr] (s1) -- (s2);
+    \draw[arr, dashed, red!70!black] (o5.east) -- ++(8mm,0) |- node[font=\scriptsize\itshape, pos=0.3, left]{biais} (s1.west);
+  \end{tikzpicture}
+  \caption{Un bloc du Pairformer (réalisation personnelle, d'après~\cite{abramson2024}). Le Pairformer en empile 48.}
+  \label{fig:pairformer_bloc}
+\end{figure}
+
+\paragraph{Pourquoi des \og triangles \fg{} ?} Une liste de distances n'a de sens que si elle est \emph{cohérente}. Pour trois points $i$, $j$, $k$ quelconques, l'\textbf{inégalité triangulaire} impose :
+\[
+  d(i,j) \;\leq\; d(i,k) + d(k,j).
+\]
+Si $i$ est proche de $k$ et $k$ proche de $j$, alors $i$ et $j$ ne peuvent pas être loin l'un de l'autre. Les opérations triangulaires permettent au réseau d'appliquer ce genre de raisonnement : pour corriger l'arête $(i,j)$, il consulte toutes les paires d'arêtes $(i,k)$ et $(k,j)$ qui forment un triangle avec elle. Il n'applique pas la formule ci-dessus telle quelle : il apprend, à partir des structures de la PDB, quelles combinaisons sont cohérentes.
+
+\paragraph{Exemple : un site de fixation du calcium.} L'exemple reprend la calmoduline (section~\ref{sec:test}), cette fois soumise à AlphaFold3 avec ses ions. Son premier motif EF-hand fixe un ion Ca$^{2+}$ grâce, entre autres, à l'aspartate~21 et au glutamate~32 : un oxygène de chacune de leurs chaînes latérales se place à environ 2,4~Å de l'ion. Il suffit de considérer trois jetons : $i$ = Asp21, $j$ = Glu32 et $k$ = l'ion Ca$^{2+}$ (un atome, donc un jeton à lui seul).
+
+Pour simplifier, il est supposé ici que $z_{ij}$ ne contient qu'une distance estimée entre les atomes coordinants (en réalité, c'est un vecteur de 128 nombres appris, sans signification directe). Le tableau~\ref{tab:triangle} montre l'état de la représentation avant et après les opérations triangulaires.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Paire} & \textbf{Avant} & \textbf{Après les triangles} \\
+\midrule
+Asp21 -- Ca$^{2+}$ & proche ($\approx$ 2,4~Å) : motif EF-hand reconnu & inchangé \\
+Glu32 -- Ca$^{2+}$ & proche ($\approx$ 2,4~Å) : motif EF-hand reconnu & inchangé \\
+Asp21 -- Glu32 & incertain : 11 résidus d'écart, entre 3 et 20~Å & proche : au plus $2{,}4 + 2{,}4 = 4{,}8$~Å \\
+\bottomrule
+\end{tabularx}
+\caption{Exemple simplifié de raisonnement triangulaire dans le Pairformer.}
+\label{tab:triangle}
+\end{table}
+
+Au départ, la séquence seule ne dit pas si Asp21 et Glu32 se touchent : 11 résidus les séparent, et la boucle qui les relie pourrait être étirée. Mais le réseau a reconnu que chacun des deux touche l'ion. En passant par le jeton $k$, le triangle (Asp21, Ca$^{2+}$, Glu32) force la troisième arête : les deux résidus doivent être à moins de 5~Å l'un de l'autre. La boucle du motif EF-hand doit donc se refermer autour de l'ion. Le même raisonnement, répété sur des milliers de triangles et sur 48 blocs, propage les contraintes locales à tout le complexe. Enfin, à l'étape 6, le jeton Ca$^{2+}$ porte son attention surtout sur Asp21, Glu32 et les autres résidus du site, ceux dont l'arête $z$ indique qu'ils sont proches.
+
+C'est exactement ce qu'AlphaFold2 ne pouvait pas faire : sans jeton pour l'ion, ce triangle n'existe pas, et la boucle doit être déduite de la seule coévolution.
+
+\paragraph{Ce qui change par rapport à l'Evoformer.} L'Evoformer d'AlphaFold2 contenait déjà les quatre opérations triangulaires. La différence porte sur le reste du bloc :
+\begin{itemize}
+  \item l'Evoformer traite le MSA entier (une ligne par séquence homologue) à chaque bloc. Le Pairformer le remplace par une seule représentation par jeton, qui ne dépend pas des homologues ;
+  \item dans l'Evoformer, le MSA met à jour les paires à chaque bloc (\emph{outer product mean}). Dans le Pairformer, cet échange a lieu une seule fois, dans le module MSA, en amont ;
+  \item une représentation par jeton convient à toutes les molécules. Un ligand ou un ion n'a pas d'homologues et ne pourrait pas figurer dans un MSA.
+\end{itemize}
+
+\paragraph{Un coût élevé.} Une opération triangulaire examine, pour chacune des $N^2$ paires, les $N$ jetons $k$ possibles : son coût croît comme $N^3$. Doubler la taille du complexe multiplie le calcul par huit. C'est l'une des raisons pour lesquelles AlphaFold3 local demande un GPU avec beaucoup de mémoire, et pourquoi un GPU de 16~Go se limite à environ 1\,280 jetons (tableau~\ref{tab:solutions}).
