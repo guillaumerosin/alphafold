@@ -174,18 +174,19 @@ Réseau & Connexion Internet & Connexion Internet : téléchargements initiaux, 
 \end{table}
 
 \subsection{AlphaFold3 via AlphaFold Server}
+\label{sec:af3_server}
 
-\paragraph{Installation.} Aucune : il suffit de se connecter sur \url{https://alphafoldserver.com} avec un compte Google et d'accepter les conditions d'utilisation. Le compteur \og Emplois restants \fg{} indique le quota du jour (30).
+\paragraph{Installation.} Aucune : il suffit de se connecter sur \url{https://alphafoldserver.com/} avec un compte Google et d'accepter les conditions d'utilisation. L'interface est en anglais ; le compteur \og Remaining jobs \fg{} indique le quota du jour (30).
 
 \paragraph{Soumettre une nouvelle séquence.}
 \begin{enumerate}
-  \item Laisser \og Type d'entité \fg{} sur \emph{Protéine} et \og Copies \fg{} sur 1, puis coller la séquence (lettres seules, sans l'en-tête FASTA) dans le champ prévu.
-  \item Pour un complexe, cliquer sur \og Ajouter une entité \fg{} et choisir une autre chaîne, de l'ADN, de l'ARN, un ligand ou un ion : c'est là que se voit la différence avec AlphaFold2.
-  \item Cliquer sur \og Continuer et prévisualiser l'emploi \fg{}, nommer la tâche, puis confirmer l'envoi.
-  \item La tâche apparaît dans l'historique avec le statut \og En cours \fg{}, puis une coche quand elle est terminée (quelques minutes pour une petite protéine).
+  \item Laisser \og Entity type \fg{} sur \emph{Protein} et \og Copies \fg{} sur 1, puis coller la séquence dans le champ \og Paste sequence or fasta \fg{} (séquence brute ou format FASTA).
+  \item Pour un complexe, cliquer sur \og Add entity \fg{} et choisir une autre chaîne, de l'ADN, de l'ARN, un ligand ou un ion : c'est là que se voit la différence avec AlphaFold2.
+  \item Cliquer sur \og Continue and preview job \fg{}, nommer la tâche, puis cliquer sur \og Confirm and submit job \fg{}.
+  \item La tâche apparaît dans l'historique avec une icône de chargement (filtre \og In progress \fg{}), puis passe dans \og Completed \fg{} quand elle est terminée (quelques minutes pour une petite protéine).
 \end{enumerate}
 
-\paragraph{Résultats.} Le résultat s'affiche directement dans le navigateur : structure 3D colorée par pLDDT, matrice PAE, pTM et ipTM. Le bouton \og Télécharger \fg{} fournit une archive ZIP. Ses fichiers principaux sont les suivants (\texttt{<nom>} est le nom donné à la tâche) :
+\paragraph{Résultats.} Le résultat s'affiche directement dans le navigateur : structure 3D colorée par pLDDT, matrice PAE, pTM et ipTM. Le bouton \og Download \fg{}, en haut de la page, fournit une archive ZIP. Ses fichiers principaux sont les suivants (\texttt{<nom>} est le nom donné à la tâche) :
 \begin{itemize}
   \item \texttt{fold\_<nom>\_model\_0.cif} à \texttt{model\_4.cif} : les 5 structures prédites (format mmCIF), le modèle~0 étant le mieux classé ;
   \item \texttt{fold\_<nom>\_summary\_confidences\_*.json} : les scores globaux de chaque modèle (pTM, ipTM, score de classement, fraction désordonnée, présence de collisions) ;
@@ -279,6 +280,67 @@ MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKES\\
 TLHLVLRLRGG
 \end{center}
 
+\paragraph{Refaire la manipulation, étape par étape.} Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.
+\begin{enumerate}
+  \item Ouvrir AlphaFold Server : \url{https://alphafoldserver.com/}.
+  \item Se connecter avec un compte Google, puis accepter les conditions d'utilisation lors de la première connexion. La page de soumission (onglet \og Server \fg{}) s'affiche, avec le compteur \og Remaining jobs: 30 \fg{} en haut à droite.
+  \item Récupérer la séquence : ouvrir \url{https://www.rcsb.org/fasta/entry/1UBQ} et copier son contenu, ou copier directement la séquence ci-dessus. Le champ accepte aussi le format FASTA, l'en-tête \texttt{>1UBQ\_1|...} peut donc être collé avec.
+  \item Sur AlphaFold Server, vérifier que \og Entity type \fg{} vaut \emph{Protein} et \og Copies \fg{} vaut 1, puis cliquer dans le champ \og Paste sequence or fasta \fg{} (figure~\ref{fig:af3_champ_vide}). Le message rouge \og This field is required \fg{} disparaît dès que la séquence est collée.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/1_champ_vide.png}
+  \caption{Étape 4 : la ligne d'entité vide, avant de coller la séquence.}
+  \label{fig:af3_champ_vide}
+\end{figure}
+
+\begin{enumerate}
+  \setcounter{enumi}{4}
+  \item Coller la séquence. Le serveur l'affiche découpée par blocs de 10, avec la numérotation au-dessus ; le dernier numéro doit être \textbf{76} (figure~\ref{fig:af3_sequence}).
+  \item Ne pas cliquer sur \og Add entity \fg{} : pour ce premier test, l'ubiquitine est prédite seule.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/2_sequence_collee.png}
+  \caption{Étapes 5 et 6 : la séquence de l'ubiquitine collée (76 résidus), prête à être soumise.}
+  \label{fig:af3_sequence}
+\end{figure}
+
+\begin{enumerate}
+  \setcounter{enumi}{6}
+  \item Cliquer sur le bouton bleu \og Continue and preview job \fg{}. Une fenêtre récapitulative s'ouvre (figure~\ref{fig:af3_preview}) :
+  \begin{itemize}
+    \item \og Job name \fg{} : le serveur propose un nom (date et heure) ; le remplacer par \texttt{ubiquitine} pour retrouver la tâche facilement ;
+    \item \og Seed \fg{} : laisser l'interrupteur désactivé (\og Seed: Auto \fg{}), le serveur tire alors une graine au hasard ;
+    \item vérifier le tableau : \emph{Protein}, 1 copie, \og (length 76) \fg{}.
+  \end{itemize}
+  \item Cliquer sur \og Confirm and submit job \fg{}. Le compteur \og Remaining jobs \fg{} diminue de 1.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{../figures/af3_etapes/3_previsualisation.png}
+  \caption{Étapes 7 et 8 : la fenêtre de prévisualisation avant l'envoi.}
+  \label{fig:af3_preview}
+\end{figure}
+
+\begin{enumerate}
+  \setcounter{enumi}{8}
+  \item Descendre jusqu'à l'historique, sous le formulaire. La tâche y apparaît avec une icône de chargement tant qu'elle est en cours (figure~\ref{fig:af3_historique}). Attendre quelques minutes qu'elle soit terminée, puis cliquer sur son nom pour ouvrir le résultat.
+  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.86 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite.
+  \item Faire une capture d'écran de cette page : c'est la figure~\ref{fig:af3_ubiquitine}.
+  \item Facultatif : cliquer sur \og Download \fg{} pour récupérer l'archive ZIP (structures \texttt{.cif} et scores \texttt{.json}, voir la section~\ref{sec:af3_server}).
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/4_historique.png}
+  \caption{Étape 9 : la tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom).}
+  \label{fig:af3_historique}
+\end{figure}
+
 % À AJOUTER : capture d'écran du résultat AlphaFold Server, enregistrée sous figures/af3_ubiquitine.png
 \begin{figure}[H]
   \centering
@@ -287,7 +349,7 @@ TLHLVLRLRGG
   }{%
     \fbox{\parbox[c][4cm][c]{0.9\textwidth}{\centering Capture d'écran AlphaFold Server à ajouter\\(\texttt{figures/af3\_ubiquitine.png})}}%
   }
-  \caption{Résultat d'AlphaFold3 (AlphaFold Server) pour l'ubiquitine : structure colorée par pLDDT (à gauche) et matrice PAE (à droite).}
+  \caption{Résultat d'AlphaFold3 (AlphaFold Server) pour l'ubiquitine : structure colorée par pLDDT (à gauche), matrice PAE (à droite) ; pTM = 0,86.}
   \label{fig:af3_ubiquitine}
 \end{figure}
 
@@ -297,7 +359,7 @@ TLHLVLRLRGG
 
 \paragraph{La PAE.} La matrice est vert foncé presque partout : la protéine forme un seul bloc rigide, dont les positions relatives sont fiables. Seule une bande plus claire apparaît pour les résidus 72 à 76 : la position de la queue par rapport au reste de la protéine est incertaine. Sur une protéine à plusieurs domaines, on verrait au contraire plusieurs carrés foncés séparés par des zones claires, comme pour la calmoduline (figure~\ref{fig:pae}).
 
-\paragraph{pTM et ipTM.} L'ipTM n'est pas défini ici, puisqu'il n'y a qu'une seule chaîne. Il devient le score central dès que l'on ajoute une entité (seconde protéine, ADN, ligand). Il faut aussi savoir que le score TM est très sévère pour les petites structures : sous une vingtaine de jetons, le pTM est presque nul, et il vaut mieux se fier au pLDDT et à la PAE.
+\paragraph{pTM et ipTM.} Le pTM vaut \textbf{0,86}, bien au-dessus du seuil de 0,5 au-delà duquel le repliement global est considéré comme correct. L'ipTM n'est pas défini ici (le serveur affiche \og ipTM = - \fg{}), puisqu'il n'y a qu'une seule chaîne. Il devient le score central dès que l'on ajoute une entité (seconde protéine, ADN, ligand). Il faut aussi savoir que le score TM est très sévère pour les petites structures : sous une vingtaine de jetons, le pTM est presque nul, et il vaut mieux se fier au pLDDT et à la PAE.
 
 % PROLONGEMENT À FAIRE : soumettre la calmoduline (P0DP23) avec 4 ions Ca2+ sur AlphaFold Server
 % et comparer le pLDDT, la PAE et l'orientation des lobes à la prédiction AlphaFold2 de la section sec:test.
