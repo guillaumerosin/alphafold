@@ -272,13 +272,25 @@ La solution fonctionne dans les conditions du projet, mais plusieurs situations 
 \label{sec:af3}
 %====================================================================
 
-\paragraph{Protéine choisie.} Pour un premier essai, la protéine retenue est l'\textbf{ubiquitine humaine}, une petite protéine de 76 acides aminés dont la structure expérimentale est connue à 1,8~Å de résolution (PDB \textbf{1UBQ}). La séquence a été récupérée depuis la page \og Sequence \fg{} de l'entrée 1UBQ sur le site de la PDB :
+\paragraph{Protéine choisie.}
+\begin{itemize}
+  \item \textbf{Nom} : ubiquitine ;
+  \item \textbf{Organisme} : \emph{Homo sapiens} (humain) ;
+  \item \textbf{Identifiant de la séquence} : entrée PDB \textbf{1UBQ}, chaîne~A, structure obtenue par diffraction des rayons~X à 1,8~Å de résolution~\cite{vijaykumar1987} ;
+  \item \textbf{Base de données} : Protein Data Bank (RCSB PDB)~\cite{berman2000}, page \og Sequence \fg{} de l'entrée 1UBQ. La même séquence correspond aux résidus 1 à 76 de l'entrée UniProtKB \textbf{P0CG47} (polyubiquitine-B, gène \emph{UBB})~\cite{uniprot_P0CG47} ;
+  \item \textbf{Longueur} : \textbf{76 résidus} ;
+  \item \textbf{Séquence utilisée} :
+\end{itemize}
 
 \begin{center}
 \scriptsize\ttfamily
 MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKES\\
 TLHLVLRLRGG
 \end{center}
+
+\paragraph{Justification du choix.} L'ubiquitine est plus courte que la plage recommandée (100 à 400 résidus). Ce choix est volontaire. Il s'agit d'un premier essai d'AlphaFold3, destiné à valider la manipulation sur AlphaFold Server : une protéine courte donne un résultat en quelques minutes et ne consomme qu'une tâche du quota. Le temps de calcul n'est pas une contrainte ici, puisque le calcul se fait sur les serveurs de Google. L'ubiquitine est aussi l'une des protéines les mieux connues : sa structure expérimentale à haute résolution permet de juger la prédiction à l'œil, et sa queue C-terminale flexible offre un contraste net dans les scores de confiance. L'analyse détaillée, sur une protéine de taille recommandée, est menée avec la calmoduline (149 résidus, section~\ref{sec:test}).
+
+\paragraph{Résultats conservés.} L'archive téléchargée depuis AlphaFold Server (structures mmCIF et fichiers de scores JSON) est à conserver dans le dossier \texttt{results/ubiquitine\_af3/}. La capture d'écran du résultat est enregistrée dans \texttt{figures/af3\_ubiquitine.png}.
 
 % Chaque étape illustrée est placée dans sa figure [H] pour rester sur la même page que sa capture.
 \paragraph{Refaire la manipulation, étape par étape.} Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.

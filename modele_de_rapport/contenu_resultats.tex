@@ -1,4 +1,12 @@
-\paragraph{Protéine choisie.} La protéine étudiée est la \textbf{calmoduline-1 humaine} (\emph{Homo sapiens}, gène \emph{CALM1}), identifiant UniProtKB \textbf{P0DP23}~\cite{uniprot_P0DP23,uniprot2023}, de \textbf{149 résidus}. Voici la séquence utilisée, telle que fournie par UniProt (fichier \texttt{data/P0DP23.fasta}) :
+\paragraph{Protéine choisie.}
+\begin{itemize}
+  \item \textbf{Nom} : calmoduline-1 (gène \emph{CALM1}) ;
+  \item \textbf{Organisme} : \emph{Homo sapiens} (humain) ;
+  \item \textbf{Identifiant de la séquence} : \textbf{P0DP23} (CALM1\_HUMAN) ;
+  \item \textbf{Base de données} : UniProtKB/Swiss-Prot~\cite{uniprot_P0DP23,uniprot2023} ;
+  \item \textbf{Longueur} : \textbf{149 résidus}, dans la plage recommandée (100 à 400) ;
+  \item \textbf{Séquence utilisée} : séquence complète, telle que fournie par UniProt, sans modification (fichier \texttt{data/P0DP23.fasta}) :
+\end{itemize}
 
 \begin{center}
 \scriptsize\ttfamily
@@ -7,7 +15,7 @@ NGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDE\\
 EVDEMIREADIDGDGQVNYEEFVQMMTAK
 \end{center}
 
-Ce choix a trois raisons. D'abord, la taille est compatible avec un calcul sur CPU. Ensuite, la protéine est très étudiée et sa structure expérimentale est connue (par exemple PDB 1CLL~\cite{chattopadhyaya1992}). Enfin, et surtout, sa structure en \og haltère \fg{} se prête bien à l'analyse des scores de confiance : deux lobes globulaires (chacun formé de deux motifs EF-hand fixant le Ca$^{2+}$) sont reliés par une région centrale connue pour être flexible en solution~\cite{barbato1992}. On s'attend donc à ce que le pLDDT et la PAE ne racontent pas la même chose.
+\paragraph{Justification du choix.} Ce choix a trois raisons. D'abord, la taille est compatible avec un calcul sur CPU. Ensuite, la protéine est très étudiée et sa structure expérimentale est connue (par exemple PDB 1CLL~\cite{chattopadhyaya1992}). Enfin, et surtout, sa structure en \og haltère \fg{} se prête bien à l'analyse des scores de confiance : deux lobes globulaires (chacun formé de deux motifs EF-hand fixant le Ca$^{2+}$) sont reliés par une région centrale connue pour être flexible en solution~\cite{barbato1992}. On s'attend donc à ce que le pLDDT et la PAE ne racontent pas la même chose.
 
 \paragraph{Exécution.} La commande \texttt{colabfold\_batch --num-models 5} a été lancée avec les paramètres par défaut : MSA \texttt{mmseqs2\_uniref\_env}, pas de gabarits, pas de relaxation Amber, 3 recyclages. Le MSA, construit en environ 15~s, contient \textbf{21\,884 séquences}. Chacun des 5 modèles a demandé environ 23~min sur CPU, soit \textbf{1~h~57 au total}. Le tableau~\ref{tab:fichiers} présente les fichiers importants produits dans \texttt{results/P0DP23/}.
 
