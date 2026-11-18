@@ -1,3 +1,8 @@
+%====================================================================
+\section{Annexe : la calmoduline avec AlphaFold2, résultats détaillés}
+\label{annexe:calmoduline}
+%====================================================================
+
 \paragraph{Protéine choisie.}
 \begin{itemize}
   \item \textbf{Nom} : calmoduline-1 (gène \emph{CALM1}) ;
@@ -46,14 +51,12 @@ log.txt, config.json & Journal et paramètres exacts, pour la traçabilité \\
   \label{fig:structure}
 \end{figure}
 
-%====================================================================
-\section{Analyse des scores de confiance}
-\label{sec:analyse}
-%====================================================================
+\subsection{Analyse des scores de confiance}
+\label{annexe:analyse}
 
 Les deux scores se trouvent dans le fichier \texttt{*\_scores\_rank\_001\_*.json}. Le script \texttt{scripts/analyse.py} le lit avec le module \texttt{json} de Python et produit les figures ainsi qu'un résumé chiffré (\texttt{figures/P0DP23/resume.txt}). Il vérifie aussi que le pLDDT lu dans le JSON est identique à celui stocké dans la colonne B-factor du PDB (écart maximal : 0,00).
 
-\subsection{pLDDT : confiance locale}
+\subsubsection{pLDDT : confiance locale}
 
 \paragraph{Définition.} Le pLDDT (\emph{predicted Local Distance Difference Test}) est une note de 0 à 100 attribuée à \emph{chaque résidu}. Il estime le score lDDT-C$\alpha$~\cite{mariani2013} que la prédiction obtiendrait si on la comparait à la vraie structure. Autrement dit, il indique si les distances entre ce résidu et ses voisins proches sont correctes. Ce score est \emph{local} et ne nécessite aucune superposition~\cite{jumper2021,ebi_course}.
 \begin{itemize}
@@ -79,7 +82,7 @@ Le pLDDT sert donc à décider quelles parties de la structure on peut exploiter
 \end{itemize}
 Les 5 modèles donnent le même profil (courbes grises), ce qui montre que ces variations ne sont pas dues au hasard d'un seul modèle.
 
-\subsection{PAE : confiance dans les positions relatives}
+\subsubsection{PAE : confiance dans les positions relatives}
 
 \paragraph{Définition.} La PAE (\emph{Predicted Aligned Error}) est une \emph{matrice} N$\times$N. La valeur (i,j) est l'erreur attendue, en ångströms, sur la position du résidu~\emph{i} si l'on superpose la prédiction et la vraie structure sur le résidu~\emph{j}~\cite{ebi_course}. Les deux axes représentent donc les résidus de la protéine : en ordonnée, le résidu dont on évalue la position ; en abscisse, le résidu sur lequel on aligne. La diagonale, qui correspond à l'alignement d'un résidu sur lui-même, vaut toujours presque zéro et ne porte pas d'information. Une valeur faible (vert foncé) signifie que la position relative des deux résidus est fiable ; une valeur élevée (vert clair) signifie qu'elle ne l'est pas.
 

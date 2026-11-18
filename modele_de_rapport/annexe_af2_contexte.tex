@@ -1,0 +1,10 @@
+%====================================================================
+\section{Annexe : AlphaFold2, contexte et limites techniques}
+\label{annexe:af2contexte}
+%====================================================================
+
+\paragraph{Un tournant pour la biologie structurale.} En 2020, AlphaFold2 a remporté la 14\textsuperscript{e} édition de CASP, compétition où l'on prédit des structures résolues mais pas encore publiées. Les organisateurs ont jugé le problème \og en grande partie résolu pour les protéines individuelles \fg{}~\cite{kryshtafovych2021}. Le code et les poids sont libres~\cite{alphafold_github}, et la base \textbf{AlphaFold DB} fournit gratuitement des structures précalculées pour la quasi-totalité des $\sim$200 millions de protéines d'UniProt~\cite{varadi2022}. Une variante, \textbf{AlphaFold-Multimer}~\cite{evans2021}, a ensuite permis de prédire des complexes formés de \emph{plusieurs protéines}.
+
+\paragraph{Une architecture taillée pour les protéines.} Le module de structure d'AlphaFold2 raisonne en \og résidus \fg{} : un repère rigide pour le squelette, puis des angles de torsion pour les chaînes latérales. Ce codage est propre aux acides aminés et ne s'étend pas à une petite molécule quelconque. De plus, la géométrie obtenue n'est pas toujours chimiquement propre, d'où une étape optionnelle de relaxation physique (Amber) après la prédiction~\cite{jumper2021}.
+
+\paragraph{Une forte dépendance au MSA.} L'Evoformer consacre une grande partie de son calcul au MSA. La qualité de la prédiction dépend donc fortement de la profondeur de l'alignement, et le pipeline officiel exige jusqu'à 2,6~To de bases de séquences~\cite{alphafold_github}.

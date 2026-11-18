@@ -4,11 +4,11 @@
 %   pae_af2.png, pae_af3.png : matrices PAE en image (1 ligne de la matrice = 1 ligne de pixels,
 %   résidu 1 en haut), générées depuis les JSON avec l'échelle de couleurs « paevert » ci-dessous
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
   \begin{tikzpicture}
     \begin{axis}[
-      width=\textwidth, height=6.5cm,
+      width=\textwidth, height=4.3cm,
       xmin=1, xmax=149, ymin=30, ymax=100,
       xlabel={Résidu}, ylabel={pLDDT},
       xtick={1,20,40,60,80,100,120,149},
@@ -38,11 +38,11 @@
   \label{fig:plddt_af2_af3}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
   \pgfplotsset{
     paestyle/.style={
-      width=7.4cm, height=7.4cm, scale only axis=false,
+      width=5cm, height=5cm, scale only axis=false,
       enlargelimits=false, axis on top,
       xmin=0.5, xmax=149.5, ymin=0.5, ymax=149.5, y dir=reverse,
       xtick={1,40,78,110,149}, ytick={1,40,78,110,149},
@@ -67,6 +67,6 @@
       \draw[white, thin] (axis cs:0.5,80) -- (axis cs:149.5,80);
     \end{axis}
   \end{tikzpicture}
-  \caption{Matrices PAE de la calmoduline, avec la même échelle de couleurs (0 à 30~Å). Les lignes blanches séparent les deux lobes (au résidu 80). Les blocs hors diagonale, qui mesurent l'incertitude sur l'orientation d'un lobe par rapport à l'autre, sont plus foncés avec AlphaFold3 (environ 14~Å) qu'avec AlphaFold2 (environ 20~Å), mais restent nettement plus clairs que les lobes eux-mêmes.}
+  \caption{Matrices PAE de la calmoduline, avec la même échelle de couleurs (0 à 30~Å). Les lignes blanches séparent les deux lobes (au résidu 80). Blocs hors diagonale : orientation d'un lobe par rapport à l'autre (environ 20~Å avec AlphaFold2, 14~Å avec AlphaFold3).}
   \label{fig:pae_af2_af3}
 \end{figure}

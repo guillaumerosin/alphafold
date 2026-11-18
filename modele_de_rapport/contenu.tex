@@ -6,13 +6,13 @@
 
 \paragraph{D'AlphaFold2 à AlphaFold3.} En 2020, \textbf{AlphaFold2}, développé par Google DeepMind~\cite{jumper2021}, a résolu en grande partie ce problème pour les protéines isolées. Mais dans la cellule, une protéine fonctionne rarement seule : elle se lie à de l'ADN, à de l'ARN, à des ions, à des cofacteurs ou à des médicaments. AlphaFold2 ne voit rien de tout cela. En mai 2024, \textbf{AlphaFold3}~\cite{abramson2024} a élargi la prédiction à presque toutes les molécules du vivant, réunies dans un même complexe, grâce à une architecture profondément remaniée.
 
-\paragraph{Objectif du projet.} Le projet portait au départ sur AlphaFold2. Il a été réorienté vers AlphaFold3, qui le remplace pour la plupart des usages. Le rapport répond à trois questions :
+\paragraph{Objectif du projet.} Le projet portait au départ sur AlphaFold2. Il a été réorienté vers AlphaFold3, qui le remplace pour la plupart des usages. Le rapport est centré sur la \textbf{comparaison des deux versions} et répond à trois questions :
 \begin{enumerate}
   \item \textbf{Que faisait AlphaFold2}, et comment ?
   \item \textbf{Pourquoi est-il aujourd'hui dépassé}, et qu'apporte AlphaFold3 ?
-  \item \textbf{Comment utiliser AlphaFold3 et interpréter ses résultats} ?
+  \item \textbf{Que donnent les deux versions sur la même protéine}, et comment lire leurs scores de confiance ?
 \end{enumerate}
-Le déploiement d'AlphaFold2 (ColabFold dans Docker) est conservé comme \emph{expérience de référence} : sa prédiction de la calmoduline montre concrètement l'une de ses limites. La même protéine est ensuite prédite avec AlphaFold3 via AlphaFold Server, ce qui permet de comparer directement les deux modèles. Un premier essai sur l'ubiquitine humaine, qui a servi à valider la manipulation, est présenté en annexe~\ref{sec:ubiquitine}.
+La calmoduline humaine a été prédite avec AlphaFold2 (ColabFold dans Docker, en local) puis avec AlphaFold3 (AlphaFold Server). Les choix techniques sont résumés à la section~\ref{sec:choix} ; leur détail, la mise en œuvre complète, les résultats détaillés, le protocole pas à pas et les compléments figurent en annexe, et les commandes dans le \texttt{README.md} du dépôt.
 
 %====================================================================
 \section{Ce que faisait AlphaFold2}
@@ -41,12 +41,11 @@ Plus le MSA est profond et diversifié, plus ces signaux sont fiables. À l'inve
 
 \begin{figure}[H]
   \centering
-  \resizebox{\textwidth}{!}{\input{schema}}
+  \resizebox{0.85\textwidth}{!}{\input{schema}}
   \caption{Schéma du fonctionnement général d'AlphaFold2 (réalisation personnelle, d'après~\cite{jumper2021,ebi_course}).}
   \label{fig:schema}
 \end{figure}
 
-\paragraph{Un tournant pour la biologie structurale.} En 2020, AlphaFold2 a remporté la 14\textsuperscript{e} édition de CASP, compétition où l'on prédit des structures résolues mais pas encore publiées. Les organisateurs ont jugé le problème \og en grande partie résolu pour les protéines individuelles \fg{}~\cite{kryshtafovych2021}. Le code et les poids sont libres~\cite{alphafold_github}, et la base \textbf{AlphaFold DB} fournit gratuitement des structures précalculées pour la quasi-totalité des $\sim$200 millions de protéines d'UniProt~\cite{varadi2022}. Une variante, \textbf{AlphaFold-Multimer}~\cite{evans2021}, a ensuite permis de prédire des complexes formés de \emph{plusieurs protéines}.
 
 %====================================================================
 \section{Pourquoi AlphaFold2 est aujourd'hui dépassé}
@@ -56,11 +55,9 @@ AlphaFold2 reste un excellent outil pour une protéine isolée. Mais ses limites
 
 \paragraph{Il ne voit que des protéines.} AlphaFold2 ne connaît que les 20 acides aminés standards. Il ignore l'ADN, l'ARN, les ions métalliques, les cofacteurs (hème, ATP, NAD), les médicaments et les modifications post-traductionnelles (phosphorylation, glycosylation). Or ces partenaires changent souvent la structure : la prédiction de la calmoduline réalisée dans ce projet en est un exemple. Cette protéine fixe quatre ions Ca$^{2+}$ qui modifient la conformation de ses lobes, mais AlphaFold2 la prédit \emph{sans} ses ions (section~\ref{sec:test}). Pour étudier une interaction protéine--ligand, il fallait enchaîner AlphaFold2 avec un logiciel de docking séparé.
 
-\paragraph{Une architecture taillée pour les protéines.} Le module de structure d'AlphaFold2 raisonne en \og résidus \fg{} : un repère rigide pour le squelette, puis des angles de torsion pour les chaînes latérales. Ce codage est propre aux acides aminés et ne s'étend pas à une petite molécule quelconque. De plus, la géométrie obtenue n'est pas toujours chimiquement propre, d'où une étape optionnelle de relaxation physique (Amber) après la prédiction~\cite{jumper2021}.
+\paragraph{Une architecture et un MSA taillés pour les protéines.} Le module de structure d'AlphaFold2 raisonne en résidus (repères rigides et angles de torsion), ce qui ne s'étend pas à une petite molécule, et la prédiction dépend fortement de la profondeur du MSA (détails en annexe~\ref{annexe:af2contexte}).
 
-\paragraph{Une forte dépendance au MSA.} L'Evoformer consacre une grande partie de son calcul au MSA. La qualité de la prédiction dépend donc fortement de la profondeur de l'alignement, et le pipeline officiel exige jusqu'à 2,6~To de bases de séquences~\cite{alphafold_github}.
-
-\paragraph{Les complexes, un ajout tardif.} AlphaFold-Multimer~\cite{evans2021} gère plusieurs chaînes protéiques, mais reste limité aux protéines. Ses performances sur les interfaces difficiles, comme les complexes anticorps--antigène, restent modestes~\cite{abramson2024}.
+\paragraph{Les complexes, un ajout tardif.} Après sa victoire à CASP14~\cite{kryshtafovych2021} (contexte en annexe~\ref{annexe:af2contexte}), AlphaFold2 a été étendu par AlphaFold-Multimer~\cite{evans2021}, qui gère plusieurs chaînes protéiques, mais reste limité aux protéines. Ses performances sur les interfaces difficiles, comme les complexes anticorps--antigène, restent modestes~\cite{abramson2024}.
 
 En résumé, AlphaFold2 répond à la question \og quelle est la forme de cette protéine, seule ? \fg{}. La biologie et la pharmacologie demandent plutôt \og comment cette protéine s'assemble-t-elle avec ses partenaires ? \fg{}. C'est la question à laquelle répond AlphaFold3.
 
@@ -79,7 +76,7 @@ En résumé, AlphaFold2 répond à la question \og quelle est la forme de cette 
 
 \begin{figure}[H]
   \centering
-  \resizebox{\textwidth}{!}{\input{schema_af3}}
+  \resizebox{0.85\textwidth}{!}{\input{schema_af3}}
   \caption{Schéma du fonctionnement général d'AlphaFold3 (réalisation personnelle, d'après~\cite{abramson2024}).}
   \label{fig:schema_af3}
 \end{figure}
@@ -95,7 +92,7 @@ En résumé, AlphaFold2 répond à la question \og quelle est la forme de cette 
 
 \paragraph{Des performances supérieures.} Sur le banc d'essai PoseBusters~\cite{buttenschoen2024}, qui compare des poses de ligands à des structures expérimentales, AlphaFold3 place correctement (à moins de 2~Å) environ 76~\% des ligands, sans recevoir la structure de la protéine. Il dépasse ainsi les outils de docking classiques, qui en ont pourtant besoin. Il améliore aussi nettement la prédiction des complexes protéine--acides nucléiques et anticorps--antigène par rapport à AlphaFold-Multimer, et reste au moins aussi bon qu'AlphaFold2 sur les protéines seules~\cite{abramson2024}. Pour la première fois, un modèle généraliste rivalise avec des outils spécialisés.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \footnotesize
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
@@ -116,248 +113,44 @@ Accès simple & ColabFold, AlphaFold DB & AlphaFold Server (navigateur) \\
 \end{table}
 
 %====================================================================
-\section{Choix technique}
+\section{Choix technique et mise en œuvre (résumé)}
+\label{sec:choix}
 %====================================================================
 
-Le tableau~\ref{tab:solutions} compare les solutions envisagées. La machine disponible est un PC Linux (Debian 12, 12 cœurs, 14~Go de RAM, \textbf{sans GPU NVIDIA}) sur lequel Docker est installé.
+\paragraph{Contrainte matérielle.} La machine disponible est un PC Linux (Debian~12, 12 cœurs, 14~Go de RAM, \textbf{sans GPU NVIDIA}) avec Docker. Quatre solutions ont été comparées (tableau~\ref{tab:solutions}, annexe~\ref{annexe:choix}).
 
-\begin{table}[H]
-\centering
-\footnotesize
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
-\toprule
- & \textbf{AlphaFold Server (AF3)}~\cite{alphafold_server} & \textbf{AlphaFold3 local}~\cite{alphafold3_github} & \textbf{ColabFold local, Docker (AF2)}~\cite{colabfold_github} & \textbf{AlphaFold2 officiel}~\cite{alphafold_github} \\
-\midrule
-À installer & Rien (navigateur, compte Google) & Docker, pilotes NVIDIA, code DeepMind, poids sur demande & Docker + image ColabFold (\textasciitilde 10~Go) + poids (\textasciitilde 5~Go) & Docker, pilotes NVIDIA, scripts DeepMind \\
-Calcul & Serveurs Google & Local & Local (CPU ou GPU) & Local \\
-Ressources & Aucune localement & GPU obligatoire (A100/H100 80~Go conseillé ; 16~Go limite à 1\,280 jetons) & CPU suffisant pour $<$ 300 résidus & GPU recommandé, $\geq$ 64~Go RAM \\
-Bases de données & Aucune & \textasciitilde 630~Go & Aucune : MSA via serveur MMseqs2 & \textasciitilde 2,6~To, ou \textasciitilde 500~Go en \texttt{reduced\_dbs} \\
-Avantages & Immédiat, AF3 complet, gratuit & Tous les ligands, scriptable, pas de quota & Reproductible, scriptable & Pipeline de référence, hors ligne \\
-Inconvénients & Quota journalier (30 tâches), pas d'API, liste de ligands restreinte, non commercial & Impossible sans GPU ; licence stricte, poids non redistribuables & AF2 seulement ; lent sur CPU & AF2 seulement ; irréaliste sur la machine disponible \\
-\bottomrule
-\end{tabularx}
-\caption{Comparaison des solutions envisagées.}
-\label{tab:solutions}
-\end{table}
+\paragraph{AlphaFold3 : AlphaFold Server.} L'installation locale d'AlphaFold3 exige un GPU récent (A100/H100 conseillé) et environ 630~Go de bases : elle est exclue. AlphaFold Server~\cite{alphafold_server} donne accès gratuitement au modèle complet depuis un navigateur, sans installation, pour un usage non commercial. Ses limites : 30 tâches par jour, pas d'API, liste de ligands restreinte. Le protocole pas à pas, avec captures d'écran, est donné en annexe~\ref{annexe:protocole}.
 
-\paragraph{Solution retenue pour AlphaFold3 : AlphaFold Server.} L'installation locale d'AlphaFold3 exige un GPU récent, absent de la machine disponible : elle est exclue. AlphaFold Server~\cite{alphafold_server} donne accès gratuitement au modèle complet depuis un navigateur, pour un usage non commercial. Son quota (30 tâches par jour, constaté à la connexion) suffit largement pour ce projet. Ses limites sont l'absence d'API, qui empêche l'automatisation, et une liste de ligands plus restreinte que la version locale.
+\paragraph{AlphaFold2 : ColabFold~1.5.5 dans Docker.} ColabFold~\cite{mirdita2022} utilise \emph{les mêmes réseaux et les mêmes poids} qu'AlphaFold2, mais remplace la construction du MSA (2,6~To de bases) par une recherche MMseqs2~\cite{steinegger2017} sur un serveur public. Il tourne sur CPU dans une image Docker figée ; toute la chaîne tient en deux commandes (\texttt{scripts/predict.sh} puis \texttt{scripts/analyse.py}). L'installation officielle de DeepMind en mode \texttt{reduced\_dbs} est documentée en annexe~\ref{annexe:miseenoeuvre}, sans avoir été déployée. Les difficultés rencontrées et les limites de ces solutions sont détaillées dans la même annexe.
 
-\paragraph{Référence AlphaFold2 : ColabFold~1.5.5 dans Docker.} Pour comparer, le déploiement d'AlphaFold2 a été conservé. ColabFold~\cite{mirdita2022} utilise \emph{les mêmes réseaux et les mêmes poids} qu'AlphaFold2 ; il remplace seulement la construction du MSA (2,6~To de bases) par une recherche MMseqs2~\cite{steinegger2017} sur un serveur public. Il tourne sur CPU, dans un environnement figé par Docker.
-
-\paragraph{AlphaFold2 officiel en mode \texttt{reduced\_dbs}.} Il est aussi possible de déployer l'installation officielle de DeepMind~\cite{alphafold_github}. Le disque ne permet pas d'accueillir les \textasciitilde 2,6~To de la configuration complète : il faut donc utiliser l'option \texttt{--db\_preset=reduced\_dbs}. Elle ne modifie que la construction du MSA ; le réseau, ses poids et la prédiction restent identiques. En mode complet, AlphaFold interroge UniRef90 et MGnify avec JackHMMER, puis BFD (\textasciitilde 1,8~To, en partie métagénomique) et UniRef30 (\textasciitilde 200~Go) avec HHblits. En mode \texttt{reduced\_dbs}, ces deux grosses bases sont remplacées par \textbf{small BFD} (\textasciitilde 17~Go), un sous-ensemble de BFD débarrassé de la plupart de ses séquences redondantes. L'alignement est un peu moins riche, ce qui pénalise surtout les protéines \og orphelines \fg{} ; pour la grande majorité des protéines, la différence est faible, et la recherche est plus rapide.
 
 %====================================================================
-\section{Mise en œuvre}
-%====================================================================
-
-\subsection{Prérequis}
-
-Le tableau~\ref{tab:prerequis} résume ce dont il faut disposer avant de commencer. Les versions indiquées sont celles qui ont été testées.
-
-\begin{table}[H]
-\centering
-\footnotesize
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
-\toprule
- & \textbf{AlphaFold3 (AlphaFold Server)} & \textbf{AlphaFold2 (ColabFold dans Docker)} \\
-\midrule
-Système & N'importe lequel, avec un navigateur récent & Linux (testé : Debian~12, noyau 6.12), processeur x86\_64 \\
-Compte & Compte Google & Aucun \\
-Logiciels & Aucun & Docker (testé : 29.8.1), utilisable sans \texttt{sudo} (groupe \texttt{docker}) ; Python~3.11 avec numpy et matplotlib pour l'analyse \\
-Matériel & Aucun & CPU suffisant (testé : 12 cœurs, 14~Go de RAM) ; GPU NVIDIA facultatif \\
-Disque & Aucun & \textasciitilde 20~Go (image Docker \textasciitilde 10~Go, poids 5,3~Go) \\
-Réseau & Connexion Internet & Connexion Internet : téléchargements initiaux, puis MSA calculé par le serveur \texttt{api.colabfold.com} à chaque prédiction \\
-\bottomrule
-\end{tabularx}
-\caption{Prérequis des deux solutions déployées.}
-\label{tab:prerequis}
-\end{table}
-
-\subsection{AlphaFold3 via AlphaFold Server}
-\label{sec:af3_server}
-
-\paragraph{Installation.} Aucune : il suffit de se connecter sur \url{https://alphafoldserver.com/} avec un compte Google et d'accepter les conditions d'utilisation. L'interface est en anglais ; le compteur \og Remaining jobs \fg{} indique le quota du jour (30).
-
-\paragraph{Soumettre une nouvelle séquence.}
-\begin{enumerate}
-  \item Laisser \og Entity type \fg{} sur \emph{Protein} et \og Copies \fg{} sur 1, puis coller la séquence dans le champ \og Paste sequence or fasta \fg{} (séquence brute ou format FASTA).
-  \item Pour un complexe, cliquer sur \og Add entity \fg{} et choisir une autre chaîne, de l'ADN, de l'ARN, un ligand ou un ion : c'est là que se voit la différence avec AlphaFold2.
-  \item Cliquer sur \og Continue and preview job \fg{}, nommer la tâche, puis cliquer sur \og Confirm and submit job \fg{}.
-  \item La tâche apparaît dans l'historique avec une icône de chargement (filtre \og In progress \fg{}), puis passe dans \og Completed \fg{} quand elle est terminée (quelques minutes pour une petite protéine).
-\end{enumerate}
-
-\paragraph{Résultats.} Le résultat s'affiche directement dans le navigateur : structure 3D colorée par pLDDT, matrice PAE, pTM et ipTM. Le bouton \og Download \fg{}, en haut de la page, fournit une archive ZIP. Ses fichiers principaux sont les suivants (\texttt{<nom>} est le nom donné à la tâche) :
-\begin{itemize}
-  \item \texttt{fold\_<nom>\_model\_0.cif} à \texttt{model\_4.cif} : les 5 structures prédites (format mmCIF), le modèle~0 étant le mieux classé ;
-  \item \texttt{fold\_<nom>\_summary\_confidences\_*.json} : les scores globaux de chaque modèle (pTM, ipTM, score de classement, fraction désordonnée, présence de collisions) ;
-  \item \texttt{fold\_<nom>\_full\_data\_*.json} : les scores détaillés (pLDDT par atome, matrice PAE, probabilités de contact) ;
-  \item \texttt{fold\_<nom>\_job\_request.json} : la requête soumise, utile pour la traçabilité et pour relancer la même tâche ;
-  \item \texttt{msas/} et \texttt{templates/} : les alignements et les gabarits de la PDB utilisés par le modèle.
-\end{itemize}
-
-\paragraph{Difficultés et points d'attention.}
-\begin{itemize}
-  \item \textbf{Pas d'automatisation} : aucune API n'est proposée ; chaque tâche se soumet à la main, ce qui rend les séries de prédictions fastidieuses.
-  \item \textbf{Quota} : 30 tâches par jour. Il faut donc préparer les soumissions plutôt que procéder par essais successifs.
-  \item \textbf{Ligands limités} : seule une liste restreinte de ligands et d'ions est proposée ; un médicament quelconque (formule SMILES) n'est accepté que par la version locale.
-\end{itemize}
-
-\subsection{AlphaFold2 via ColabFold (référence)}
-
-\paragraph{Installation, dans l'ordre.} Les commandes exactes figurent dans le \texttt{README.md} du dépôt :
-\begin{enumerate}
-  \item vérifier que Docker fonctionne sans \texttt{sudo} : \texttt{docker run --rm hello-world} ;
-  \item télécharger l'image, dans une version figée :\\
-  \texttt{docker pull ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2} ;
-  \item télécharger les poids d'AlphaFold2 (5,3~Go, une seule fois) avec \texttt{python -m colabfold.download}, exécuté dans le conteneur, vers un dossier \texttt{cache/} monté en volume ; \texttt{scripts/predict.sh} le fait automatiquement s'ils sont absents ;
-  \item installer les dépendances Python de l'analyse : \texttt{pip install -r scripts/requirements.txt}.
-\end{enumerate}
-
-\paragraph{Soumettre une nouvelle séquence.}
-\begin{enumerate}
-  \item Créer un fichier FASTA dans \texttt{data/}, avec \textbf{un en-tête court} et une seule séquence protéique. Par exemple, depuis UniProt :\\
-  \texttt{curl -s https://rest.uniprot.org/uniprotkb/P0DP23.fasta \textbackslash}\\
-  \texttt{\ \ | sed '1s/.*/>P0DP23/' > data/P0DP23.fasta}
-  \item Lancer la prédiction : \texttt{scripts/predict.sh data/P0DP23.fasta}. Le script exécute \texttt{colabfold\_batch --num-models 5} dans le conteneur : MSA via MMseqs2, puis prédiction par les 5 modèles AlphaFold2. Il ajoute \texttt{--gpus all} si un GPU est détecté.
-  \item Analyser : \texttt{python scripts/analyse.py results/P0DP23 -o figures/P0DP23}, qui extrait le pLDDT et la PAE et produit les figures dans \texttt{figures/P0DP23/}.
-\end{enumerate}
-
-\paragraph{Résultats.} \sloppy Les résultats sont écrits dans \texttt{results/<nom>/} et le journal complet, avec la durée, dans \texttt{logs/<nom>.log}. Les fichiers importants sont décrits au tableau~\ref{tab:fichiers} (section~\ref{sec:test}).\par\fussy
-
-\paragraph{Difficultés rencontrées et solutions.}
-\begin{itemize}
-  \item \textbf{Pas de GPU} : JAX bascule automatiquement sur le CPU. Le calcul fonctionne, mais il est lent : 1~h~57 pour 149 résidus et 5 modèles.
-  \item \textbf{Fichiers appartenant à \texttt{root}} : Docker écrit en \texttt{root} par défaut ; il faut le lancer avec \texttt{--user \$(id -u):\$(id -g) -e HOME=/tmp} (déjà fait dans \texttt{predict.sh}).
-  \item \textbf{Noms de fichiers très longs} : ColabFold nomme les sorties d'après l'en-tête FASTA complet ; il faut le raccourcir (\texttt{>P0DP23}).
-  \item \textbf{Mémoire} : les avertissements \texttt{Allocation exceeds 10\% of free system memory} sont sans conséquence ; la consommation plafonne à environ 4~Go.
-  \item \textbf{Accès à Docker refusé} (\texttt{permission denied ... docker.sock}) : l'utilisateur doit être ajouté au groupe \texttt{docker} (\texttt{sudo usermod -aG docker \$USER}), puis se reconnecter.
-\end{itemize}
-
-\subsection{AlphaFold2 officiel en mode \texttt{reduced\_dbs}}
-
-Cette installation n'est réaliste que sur une machine plus puissante (GPU recommandé, $\geq$ 64~Go de RAM, \textasciitilde 500~Go de disque). Les étapes, dans l'ordre, sont celles du dépôt de DeepMind~\cite{alphafold_github} :
-\begin{enumerate}
-  \item cloner le dépôt : \texttt{git clone https://github.com/google-deepmind/alphafold.git} ;
-  \item télécharger les bases réduites et les poids (nécessite \texttt{aria2c}) :\\
-  \texttt{scripts/download\_all\_data.sh <DOSSIER\_BASES> reduced\_dbs} ;
-  \item construire l'image Docker : \texttt{docker build -f docker/Dockerfile -t alphafold .} ;
-  \item installer le lanceur : \texttt{pip install -r docker/requirements.txt} ;
-  \item lancer une prédiction :\\
-  \texttt{python docker/run\_docker.py --fasta\_paths=séquence.fasta --db\_preset=reduced\_dbs \textbackslash}\\
-  \texttt{\ \ --data\_dir=<DOSSIER\_BASES> --output\_dir=<SORTIE> --max\_template\_date=2022-01-01}\\
-  (ajouter \texttt{--use\_gpu=false} sur une machine sans GPU).
-\end{enumerate}
-Les résultats sont écrits dans \texttt{<SORTIE>/<nom>/} : \texttt{ranked\_0.pdb} est la meilleure structure, \texttt{ranking\_debug.json} donne le classement des 5 modèles, les fichiers \texttt{result\_model\_*.pkl} contiennent les scores (pLDDT, PAE), et le dossier \texttt{msas/} les alignements. La principale difficulté est l'espace disque : la configuration complète (\textasciitilde 2,6~To) ne tient pas sur la machine disponible, d'où le mode \texttt{reduced\_dbs}.
-
-\subsection{Limites de la solution déployée}
-
-La solution fonctionne dans les conditions du projet, mais plusieurs situations la mettraient en défaut :
-\begin{itemize}
-  \item \textbf{Serveurs externes indisponibles.} ColabFold dépend du serveur public \texttt{api.colabfold.com} pour le MSA, et AlphaFold3 entièrement d'AlphaFold Server. Si l'un d'eux est arrêté, saturé ou limité, la prédiction devient impossible. Pour ColabFold, il faudrait alors héberger ses propres bases (\texttt{colabfold\_search}, \textasciitilde 1~To). Pour AlphaFold Server, le risque est réel : l'équipe AlphaFold de DeepMind a été dissoute en juillet 2026~\cite{gigazine2026}, et rien ne garantit que le service restera gratuit ou ouvert.
-  \item \textbf{Protéines longues ou complexes volumineux.} Sur CPU, le temps de calcul devient prohibitif au-delà d'environ 400 résidus ; il faut alors un GPU ou Google Colab. AlphaFold Server limite aussi la taille totale d'une tâche (5\,000 jetons).
-  \item \textbf{Séquences confidentielles.} Les deux solutions envoient la séquence à un serveur externe (MSA pour ColabFold, tout le calcul pour AlphaFold Server). Elles ne conviennent donc pas à des séquences non publiées ou protégées.
-  \item \textbf{Usage commercial.} AlphaFold Server est réservé à un usage non commercial ; une entreprise ne peut pas l'utiliser pour ses projets. AlphaFold2 (ColabFold), sous licence libre, n'a pas cette restriction.
-  \item \textbf{Grand nombre de prédictions.} Sans API et avec 30 tâches par jour, AlphaFold Server ne permet pas de criblage à grande échelle.
-  \item \textbf{Évolution de l'environnement.} L'image Docker de ColabFold est construite pour x86\_64 et n'a pas été testée sur processeur ARM (Mac M1/M2). Si l'image ou les poids venaient à être retirés de leurs dépôts, la version figée ne pourrait plus être réinstallée.
-\end{itemize}
-
-%====================================================================
-\section{Expérience de référence : la calmoduline avec AlphaFold2}
-\label{sec:test}
-%====================================================================
-
-\input{contenu_resultats}
-
-%====================================================================
-\section{AlphaFold3 : la calmoduline, comparée à AlphaFold2}
+\section{AlphaFold2 et AlphaFold3 sur la même protéine : la calmoduline}
 \label{sec:af3}
 %====================================================================
 
-Pour comparer les deux modèles, il faut leur soumettre \emph{la même protéine}. La calmoduline humaine de la section~\ref{sec:test} a donc été prédite une seconde fois, avec AlphaFold3 via AlphaFold Server. La protéine est décrite à la section~\ref{sec:test} (UniProtKB P0DP23, 149 résidus) et la séquence soumise est exactement la même, sans modification.
+\subsection{Lire les scores de confiance}
+\label{sec:analyse}
 
-\paragraph{Résultats conservés.} Les fichiers sont rangés ainsi :
+\paragraph{pLDDT.} Note de 0 à 100 attribuée à chaque résidu (à chaque atome dans AlphaFold3). Il estime le score lDDT-C$\alpha$~\cite{mariani2013} que la prédiction obtiendrait face à la vraie structure, c'est-à-dire si les distances entre un résidu et ses voisins proches sont correctes. Au-dessus de 90, la prédiction est très fiable ; entre 70 et 90, le squelette est fiable ; entre 50 et 70, la confiance est faible ; sous 50, la région ne doit pas être interprétée (souvent désordonnée). Ce score est \emph{local} : un pLDDT élevé partout ne garantit pas que les domaines sont bien placés les uns par rapport aux autres~\cite{jumper2021,ebi_course}.
+
+\paragraph{PAE.} Matrice N$\times$N : la valeur $(i,j)$ est l'erreur attendue, en Å, sur la position d'un résidu quand on superpose prédiction et vraie structure sur l'autre. Une valeur faible (foncé) signifie que la position relative des deux résidus est fiable. La PAE complète donc le pLDDT : elle juge l'\textbf{arrangement des domaines}~\cite{ebi_course}. Les définitions complètes et l'accès à ces scores dans les fichiers sont détaillés en annexe~\ref{annexe:analyse}.
+
+\subsection{Protéine et prédictions}
+\label{sec:test}
+
+La \textbf{calmoduline-1 humaine} (UniProtKB \textbf{P0DP23}~\cite{uniprot_P0DP23}, 149 résidus) a été choisie pour sa structure en \og haltère \fg{} : deux lobes globulaires fixant chacun deux ions Ca$^{2+}$, reliés par une région centrale flexible en solution~\cite{barbato1992}. On s'attend donc à ce que le pLDDT et la PAE ne racontent pas la même chose. La même séquence, sans modification, a été soumise aux deux modèles :
 \begin{itemize}
-  \item \texttt{results/fold\_calmoduline/} : l'archive téléchargée depuis AlphaFold Server, décompressée. Elle contient les 5 structures (mmCIF), les fichiers de scores (JSON), la requête soumise, le MSA et les gabarits utilisés ;
-  \item \texttt{figures/af3\_calmoduline.png} : la capture d'écran du résultat.
+  \item \textbf{AlphaFold2} : ColabFold, paramètres par défaut (5 modèles, 3 recyclages, sans gabarits ni relaxation), \textbf{1~h~57 sur CPU} ; résultats dans \texttt{results/P0DP23/} ;
+  \item \textbf{AlphaFold3} : AlphaFold Server, réglages par défaut (5 modèles, gabarits activés), \textbf{quelques minutes} ; résultats dans \texttt{results/fold\_calmoduline/}.
 \end{itemize}
+La séquence, les fichiers produits et l'analyse détaillée de la prédiction AlphaFold2 figurent en annexe~\ref{annexe:calmoduline} ; un premier essai d'AlphaFold3 sur l'ubiquitine, qui a servi à valider la manipulation, en annexe~\ref{sec:ubiquitine}.
 
-\subsection{Refaire la manipulation, étape par étape}
-
-% Chaque étape illustrée est placée dans sa figure [H] pour rester sur la même page que sa capture.
-Il faut seulement un navigateur et un compte Google ; aucune installation n'est nécessaire.
-\begin{enumerate}
-  \item Ouvrir AlphaFold Server : \url{https://alphafoldserver.com/}.
-  \item Se connecter avec un compte Google, puis accepter les conditions d'utilisation lors de la première connexion. La page de soumission (onglet \og Server \fg{}) s'affiche, avec le compteur \og Remaining jobs: 30 \fg{} en haut à droite.
-  \item Récupérer la séquence : ouvrir \url{https://rest.uniprot.org/uniprotkb/P0DP23.fasta} et copier son contenu, ou copier la séquence de la section~\ref{sec:test}. Le champ accepte aussi le format FASTA : l'en-tête peut donc être collé avec.
-\end{enumerate}
-
-\begin{figure}[H]
-\begin{enumerate}
-  \setcounter{enumi}{3}
-  \item Sur AlphaFold Server, vérifier que \og Entity type \fg{} vaut \emph{Protein} et \og Copies \fg{} vaut 1, puis cliquer dans le champ \og Paste sequence or fasta \fg{} (figure~\ref{fig:af3_champ_vide}).
-\end{enumerate}
-  \centering
-  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/1_champ_vide.png}
-  \caption{Étape 4 : la ligne d'entité vide, avant de coller la séquence.}
-  \label{fig:af3_champ_vide}
-\end{figure}
-
-\begin{figure}[H]
-\begin{enumerate}
-  \setcounter{enumi}{4}
-  \item Coller la séquence. Le serveur l'affiche découpée par blocs de 10, avec la numérotation au-dessus.
-\end{enumerate}
-  \centering
-  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/2_sequence_collee.png}
-  \caption{Étape 5 : la séquence de la calmoduline collée (149 résidus), prête à être soumise.}
-  \label{fig:af3_sequence}
-\end{figure}
-
-\begin{figure}[H]
-\begin{enumerate}
-  \setcounter{enumi}{5}
-  \item Cliquer sur le bouton bleu \og Continue and preview job \fg{}. Une fenêtre récapitulative s'ouvre (figure~\ref{fig:af3_preview}) :
-  \begin{itemize}
-    \item \og Job name \fg{} : le serveur propose un nom (date et heure) ; le remplacer par \texttt{calmoduline} pour retrouver la tâche facilement ;
-    \item \og Seed \fg{} : laisser l'interrupteur désactivé (\og Seed: Auto \fg{}), le serveur tire alors une graine au hasard ;
-    \item vérifier le tableau : \emph{Protein}, 1 copie, \og (length 149) \fg{}.
-  \end{itemize}
-  \item Cliquer sur \og Confirm and submit job \fg{}. Le compteur \og Remaining jobs \fg{} diminue de 1.
-\end{enumerate}
-  \centering
-  \includegraphics[width=0.55\textwidth]{../figures/af3_etapes/3_previsualisation.png}
-  \caption{Étapes 6 et 7 : la fenêtre de prévisualisation avant l'envoi.}
-  \label{fig:af3_preview}
-\end{figure}
-
-\begin{figure}[H]
-\begin{enumerate}
-  \setcounter{enumi}{7}
-  \item Dans l'historique, sous le formulaire, attendre la fin du calcul (figure~\ref{fig:af3_historique}), puis cliquer sur le nom de la tâche.
-\end{enumerate}
-  \centering
-  \includegraphics[width=0.95\textwidth]{../figures/af3_etapes/4_historique.png}
-  \caption{Étape 8 : une tâche dans l'historique, en cours de calcul (icône de chargement à gauche du nom). La capture montre le premier essai sur l'ubiquitine (annexe~\ref{sec:ubiquitine}), qui avait gardé le nom proposé par défaut.}
-  \label{fig:af3_historique}
-\end{figure}
-
-\begin{figure}[H]
-\begin{enumerate}
-  \setcounter{enumi}{8}
-  \item Lire le résultat : la légende des couleurs pLDDT et les scores (\og ipTM = - \fg{}, \og pTM = 0.61 \fg{}) en haut, la structure 3D colorée par pLDDT à gauche et la matrice PAE à droite (figure~\ref{fig:af3_calmoduline}).
-  \item Cliquer sur \og Download \fg{} et décompresser l'archive dans \texttt{results/}.
-\end{enumerate}
-  \centering
-  \includegraphics[width=0.95\textwidth]{../figures/af3_calmoduline.png}
-  \caption{Résultat d'AlphaFold3 (AlphaFold Server) pour la calmoduline : structure colorée par pLDDT (à gauche), matrice PAE (à droite) ; pTM = 0,61.}
-  \label{fig:af3_calmoduline}
-\end{figure}
-
-\subsection{Résultats et comparaison avec AlphaFold2}
+\subsection{Résultats et comparaison}
 
 Les scores d'AlphaFold3 ont été extraits des fichiers téléchargés avec les mêmes définitions que pour AlphaFold2 : pLDDT des atomes C$\alpha$, mêmes classes de confiance, mêmes domaines pour la PAE (lobe~N = résidus 1--78, lobe~C = résidus 82--149). Le tableau~\ref{tab:af2_af3_calm} compare les deux meilleurs modèles.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \footnotesize
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{3.6cm}}
@@ -400,7 +193,6 @@ Les figures~\ref{fig:plddt_af2_af3} et~\ref{fig:pae_af2_af3} superposent les deu
 % PROLONGEMENT À FAIRE : soumettre la calmoduline avec 4 ions Ca2+ (tâche calmoduline_ca)
 % et comparer pLDDT, PAE entre les lobes et position des ions dans les boucles EF-hand.
 
-%====================================================================
 \section{Limites d'AlphaFold3}
 %====================================================================
 
@@ -411,35 +203,7 @@ AlphaFold3 dépasse AlphaFold2, mais il ne règle pas tout.
   \item \textbf{Des chimies nouvelles mal prédites.} La précision chute quand un ligand s'éloigne chimiquement de ceux vus à l'entraînement. Les complexes anticorps--antigène restent difficiles, malgré les progrès.
   \item \textbf{Un accès moins ouvert.} À sa sortie, ni le code ni les poids n'étaient publiés. Depuis fin 2024, le code est disponible, mais les poids sont accordés sur demande, pour un usage académique non commercial, et ne peuvent pas être redistribués~\cite{alphafold3_github}. AlphaFold2, lui, reste entièrement libre.
 \end{itemize}
-
-%====================================================================
-\section{Et après ? Vers un \og AlphaFold~4 \fg{}}
-%====================================================================
-
-\paragraph{Pas d'AlphaFold~4 officiel.} À la date de ce rapport, Google DeepMind n'a publié aucun modèle nommé AlphaFold~4. L'expression circule pourtant depuis février 2026, à propos d'un modèle développé par \textbf{Isomorphic Labs}, la filiale de DeepMind consacrée à la découverte de médicaments.
-
-\paragraph{IsoDDE, le successeur de fait.} Le 10 février 2026, Isomorphic Labs a présenté son \emph{Drug Design Engine} (\textbf{IsoDDE}) dans un rapport technique~\cite{isodde2026}. IsoDDE reprend les capacités de prédiction de structure d'AlphaFold3 et les complète par des modules dédiés à l'affinité de liaison, à la détection de poches et aux anticorps. Le biologiste computationnel Mohammed AlQuraishi (Columbia University) le décrit comme \og une avancée majeure, à l'échelle d'un AlphaFold~4 \fg{}~\cite{callaway2026}.
-
-\paragraph{Pourquoi il serait meilleur qu'AlphaFold3.} Les gains annoncés visent précisément les limites d'AlphaFold3 décrites à la section précédente~\cite{isodde2026,callaway2026} :
-\begin{itemize}
-  \item \textbf{Des chimies nouvelles.} Sur le banc d'essai Runs N' Poses, pour les complexes protéine--ligand les plus éloignés des données d'entraînement (0 à 20~\% de similarité), IsoDDE fait plus de deux fois mieux qu'AlphaFold3. Il capte aussi l'ajustement induit, c'est-à-dire la déformation de la protéine au contact du ligand.
-  \item \textbf{Les anticorps.} Sur 334 complexes anticorps--antigène peu similaires à l'entraînement, il obtient 2,3 fois plus de prédictions de haute qualité qu'AlphaFold3.
-  \item \textbf{L'affinité de liaison.} AlphaFold3 donne une pose, pas une force de liaison. IsoDDE prédit l'affinité, avec une précision annoncée proche des calculs physiques de référence (perturbation d'énergie libre, FEP), sans structure cristallographique de départ et pour un coût bien moindre.
-  \item \textbf{Les poches cachées.} À partir de la seule séquence, il a retrouvé des sites de liaison connus et nouveaux sur le céréblon, dont des poches \og cryptiques \fg{} qui n'apparaissent qu'en présence d'un ligand.
-\end{itemize}
-Autrement dit, AlphaFold3 répond à la question \og comment ce complexe est-il assemblé ? \fg{}. IsoDDE vise la question suivante du pharmacologue : \og cette molécule va-t-elle se fixer, où, et avec quelle force ? \fg{}.
-
-\paragraph{Un progrès qu'on ne peut pas vérifier.} Contrairement à AlphaFold2 et AlphaFold3, IsoDDE est \textbf{propriétaire} : ni code, ni poids, ni serveur public, et le rapport ne décrit presque pas la méthode. Il est donc impossible de reproduire ces résultats, ni de savoir s'ils viennent d'innovations dans l'algorithme ou de données privées issues des partenariats industriels~\cite{callaway2026}. Ces chiffres sont des annonces de l'entreprise, pas des résultats évalués de façon indépendante. Il faut aussi noter la nature des sources : l'expression \og AlphaFold~4 \fg{} vient d'un article d'actualité de \emph{Nature} (rubrique \emph{News})~\cite{callaway2026}, qui rapporte l'avis de chercheurs, et non d'une publication scientifique évaluée par des pairs ; IsoDDE n'est lui-même décrit que dans un rapport technique de l'entreprise~\cite{isodde2026}.
-
-\paragraph{Ce qui s'est passé depuis.} Huit mois après l'annonce d'IsoDDE, aucun modèle nommé AlphaFold~4 n'a été publié, ni par Google DeepMind, ni par Isomorphic Labs. Les nouvelles de 2026 vont plutôt dans le sens d'une fermeture :
-\begin{itemize}
-  \item \textbf{Mars--mai 2026} : seule avancée publique, AlphaFold DB s'ouvre aux complexes. EMBL-EBI, Google DeepMind, NVIDIA et l'Université nationale de Séoul y ont ajouté 1,7 million d'homodimères et près de 80\,000 hétérodimères prédits avec une confiance élevée, pour 20 espèces très étudiées et les pathogènes prioritaires de l'OMS~\cite{ebi_complexes2026}. Il s'agit de nouvelles prédictions, pas d'un nouveau modèle.
-  \item \textbf{Mai 2026} : Isomorphic Labs lève 2,1 milliards de dollars (série~B menée par Thrive Capital, avec Alphabet et GV) pour développer IsoDDE et ses propres médicaments. L'annonce ne mentionne aucune ouverture du modèle~\cite{eurobiotech2026}.
-  \item \textbf{Juillet 2026} : Google DeepMind dissout l'équipe dédiée à AlphaFold. Ses chercheurs sont réaffectés à des projets autour de Gemini, à d'autres recherches scientifiques ou à Isomorphic Labs, et John Jumper, colauréat du prix Nobel de chimie 2024 pour AlphaFold, quitte l'entreprise~\cite{engadget2026,gigazine2026}. AlphaFold DB, AlphaFold Server et AlphaFold3 restent toutefois disponibles.
-\end{itemize}
-Un AlphaFold~4 public, dans la lignée des versions précédentes, semble donc peu probable à court terme.
-
-On retrouve ainsi, en plus marqué, la tendance déjà visible avec AlphaFold3 : à chaque génération, le modèle devient plus puissant, mais moins ouvert. AlphaFold2 était entièrement libre, AlphaFold3 l'est partiellement, et son successeur de fait est réservé à un usage interne. Pour la recherche publique, les alternatives ouvertes, comme Boltz-2, prennent le relais.
+Les successeurs annoncés d'AlphaFold3 (IsoDDE, parfois qualifié d'\og AlphaFold~4 \fg{}) et l'évolution de l'écosystème en 2026 sont présentés en annexe~\ref{annexe:af4}.
 
 %====================================================================
 \section{Retour d'expérience}

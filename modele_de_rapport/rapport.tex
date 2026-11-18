@@ -38,6 +38,13 @@
 %graphiques de comparaison AlphaFold2 / AlphaFold3 (pLDDT, PAE)
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.16}
+%placement des flottants : autoriser plus de figures avec du texte sur une même page
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.85}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{5}
 
 %====================== AFFICHAGE DE LISTINGS ======================
 
@@ -122,8 +129,12 @@ pdfstartview={FitH}}					% ajuste la page à la largueur de l'écran
 %annexes
 \newpage
 \appendix
-\input{annexe_pairformer}
-\newpage
+\input{annexe_af2_contexte}
+\input{annexe_choix_technique}
+\input{annexe_calmoduline}
+\input{annexe_protocole_af3}
 \input{annexe_ubiquitine}
+\input{annexe_pairformer}
+\input{annexe_af4}
 
 \end{document}
